@@ -178,25 +178,6 @@ These examples show both the conversational prompts and the resulting `.gspec/` 
 
 ---
 
-## Project Artifacts
-
-gspec saves all artifacts in `.gspec/` at your project root:
-
-```
-.gspec/
-├── context.md              # Codebase understanding or project intent
-├── spec.md                 # Requirements and scope
-├── plan.md                 # Technical implementation plan
-└── features/               # Multi-feature support (optional)
-    └── wishlist/
-        ├── spec.md
-        └── plan.md
-```
-
-> **Tip:** Add `.gspec/` to your `.gitignore` if you don't want to commit spec artifacts, or commit them if you want the spec to travel with the code.
-
----
-
 ## How It Works
 
 ### Explore (Phase 1)
@@ -232,19 +213,6 @@ For complex features, the agent **uses web search** to research current options,
 - Specific library recommendations for common concerns (auth, validation, testing, ORM)
 - For brownfield: suggestions that complement existing patterns
 
-### Implementation → Copilot Native
-
-After gspec, switch to plan mode (`Shift+Tab`) and reference the artifacts:
-
-```
-> @.gspec/context.md @.gspec/spec.md @.gspec/plan.md
-> Implement the wishlist feature following these patterns and requirements.
-```
-
-- Copilot can generate tasks and implementation steps from these artifacts
-- Reference `.gspec/` artifacts with `@` mentions for context
-- The patterns section in `context.md` ensures code matches the codebase
-
 ---
 
 ## Copilot-Native Integrations
@@ -259,25 +227,6 @@ gspec is built specifically for Copilot CLI, not just running on it:
 | **Plan mode** | Handoff suggests `Shift+Tab` to enter plan mode for task generation |
 | **`gh` CLI** | Optionally creates GitHub Issues from the spec for project tracking when `gh` is available and authenticated |
 | **Skills system** | User-level skill — auto-discovered in every session, every project |
-
----
-
-## Skill Contents
-
-```
-gspec-skill/
-├── SKILL.md                        # Core skill definition (all phase instructions)
-├── README.md                       # This file
-├── CONTRIBUTING.md                 # Contributor workflow and local testing guide
-├── references/
-│   └── explore-guide.md            # Detailed codebase exploration patterns
-├── examples/
-│   ├── quick.md                    # Compact example for gspec quick
-│   ├── greenfield.md               # Full example: CLI tool from scratch
-│   └── brownfield.md               # Full example: feature on existing API
-└── .claude-plugin/
-    └── plugin.json                 # Plugin metadata
-```
 
 ---
 
@@ -333,17 +282,7 @@ The SKILL.md format is Copilot CLI-specific, but the methodology and artifact st
 
 ## Contributing
 
-If you want to improve gspec:
-
-1. Edit the files in this repo locally.
-2. Start a **new** Copilot CLI session so the updated skill is reloaded.
-3. Test at least these flows:
-   - `gspec explore` in a brownfield repo
-   - `gspec quick` for a small feature
-   - `gspec` end-to-end in an empty directory
-4. Keep `SKILL.md`, `README.md`, `examples/`, and `references/` consistent with each other.
-
-If you change the process, update the examples too — they are part of the product.
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 
