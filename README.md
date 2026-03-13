@@ -136,10 +136,11 @@ gspec saves all artifacts in `.gspec/` at your project root:
 - Reads tests to understand domain boundaries
 - Extracts coding patterns and principles as **rules to follow** (not just observations)
 - Assesses strengths and technical debt
+- **Generates `.github/copilot-instructions.md`** from the discovered patterns — so every future Copilot session (CLI and VS Code) automatically follows your codebase conventions
 
 The output is written as a **cold-reader briefing** — any future AI session can read `context.md` and immediately understand the project.
 
-**Greenfield** — The agent researches the domain via web search (prior art, common patterns, pitfalls), then asks about your project goals, users, and constraints.
+**Greenfield** — The agent suggests using `/research` for deep domain research, then asks about your project goals, users, and constraints.
 
 ### Specify (Phase 2)
 
@@ -149,7 +150,7 @@ The agent doesn't just take dictation — it **actively challenges** your requir
 - Surfaces implicit requirements ("This will need authentication — is that in scope?")
 - Clarifies priorities ("If you shipped half of this, which half matters most?")
 
-Output uses plain-language requirements, not user story ceremony.
+Output uses plain-language requirements, not user story ceremony. Optionally creates a **GitHub Issue** from the spec for project tracking.
 
 ### Plan (Phase 3) — *optional*
 
@@ -171,6 +172,21 @@ After gspec, switch to plan mode (`Shift+Tab`) and reference the artifacts:
 - Copilot generates tasks, tracks them, and implements them
 - Reference `.gspec/` artifacts with `@` mentions for context
 - The patterns section in `context.md` ensures code matches the codebase
+
+---
+
+## Copilot-Native Integrations
+
+gspec is built specifically for Copilot CLI, not just running on it:
+
+| Feature | How gspec uses it |
+|---------|------------------|
+| **`.github/copilot-instructions.md`** | Explore phase generates this from discovered coding patterns — every future Copilot session auto-loads your conventions |
+| **`/research`** | Greenfield explore suggests deep domain research via Copilot's multi-source research |
+| **`@` file mentions** | Handoff prompts use `@.gspec/context.md` to pass artifacts as context |
+| **Plan mode** | Handoff suggests `Shift+Tab` to enter plan mode for task generation |
+| **`gh` CLI** | Optionally creates GitHub Issues from the spec for project tracking |
+| **Skills system** | User-level skill — auto-discovered in every session, every project |
 
 ---
 
