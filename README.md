@@ -27,17 +27,6 @@ gspec writes persistent artifacts to `.gspec/`, so future Copilot sessions can r
 
 Works with **any tech stack**, **any project type**, **greenfield or brownfield**.
 
-```mermaid
-flowchart LR
-    A[Idea or feature request] --> B[Explore]
-    B --> C[.gspec/context.md]
-    C --> D[Specify]
-    D --> E[.gspec/spec.md]
-    E --> F[Plan]
-    F --> G[.gspec/plan.md]
-    G --> H[Copilot plan mode]
-```
-
 ---
 
 ## Why gspec?
