@@ -426,12 +426,12 @@ The value of gspec is that these artifacts are a **persistent briefing document*
 1. **Check `.gspec/` status on entry** — report what exists, suggest next step
 2. **On first `.gspec/` creation** — if a `.gitignore` exists, offer to add `.gspec/` to it (let the user decide — some prefer to commit spec artifacts)
 3. **Read existing artifacts** before writing new ones — phases build on each other
-3. **Be challenging** — probe for gaps, don't just accept requirements at face value
-4. **Keep artifacts concise** — no boilerplate. Every line should earn its place.
-5. **Respect scope** — if the user only wants one phase, do that phase
-6. **Update, don't overwrite** — if an artifact exists, ask whether to update or start fresh
-7. **Multi-feature support** — use `.gspec/features/<name>/` subdirectories when needed
-8. **Use web search proactively** — see the Web Research section
+4. **Be challenging** — probe for gaps, don't just accept requirements at face value
+5. **Keep artifacts concise** — no boilerplate. Every line should earn its place.
+6. **Respect scope** — if the user only wants one phase, do that phase
+7. **Update, don't overwrite** — if an artifact exists, ask whether to update or start fresh
+8. **Multi-feature support** — use `.gspec/features/<name>/` subdirectories when needed
+9. **Use web search proactively** — see the Web Research section
 
 ---
 
