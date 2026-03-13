@@ -14,6 +14,11 @@ No .gspec/ directory found. Starting fresh.
 ```
 
 Starting gspec workflow. Since this directory is empty, I'll treat this as a greenfield project.
+If you want deeper domain input first, I recommend running:
+
+`/research What are the common patterns, tradeoffs, and pitfalls in building a cross-platform dotfiles CLI?`
+
+I'll continue with a lightweight pass now and capture prior art inline.
 
 ### Phase 1: Explore
 
@@ -41,6 +46,13 @@ Syncs via git, deploys via symlinks. Should be clean enough to open-source.
 
 ## Domain
 Developer tooling — personal configuration management.
+
+## Prior Art and Inspirations
+- **chezmoi** — strong precedent for dotfile management, templating, and machine-specific config
+- **GNU Stow** — useful mental model for symlink-based deployment
+- **dotbot** — shows a lightweight bootstrap-first approach without a heavy runtime
+
+Takeaway: prefer a simple file-centric model, clear bootstrap behavior, and minimal ongoing setup.
 
 ## Target Users
 The developer themselves, across multiple machines. Potentially other developers.

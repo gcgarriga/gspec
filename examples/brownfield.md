@@ -77,6 +77,8 @@ Migrations in `prisma/migrations/`.
 **Debt:** No request logging/tracing, payment service is a 600-line monolith that should be split, no rate limiting, some Prisma queries in route handlers (bypassing service layer in 3 places)
 ```
 
+I can also offer to generate or update `.github/copilot-instructions.md` from the patterns above once you confirm this context is accurate.
+
 Anything missing or incorrect?
 
 ---
