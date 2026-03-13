@@ -6,7 +6,14 @@ A compact example of using `gspec quick` for a small feature where a full 3-phas
 
 **User:** gspec quick — add a `/health` endpoint that returns service status and app version
 
-**Agent:** ✅ Wrote `.gspec/spec.md`
+**Agent:**
+
+```text
+📋 gspec status:
+No existing .gspec/spec.md found. Quick path is clear.
+```
+
+✅ Wrote `.gspec/spec.md`
 
 ```markdown
 # Quick Spec: Health Endpoint

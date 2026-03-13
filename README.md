@@ -106,6 +106,7 @@ Then hand off to Copilot's native **planning/task workflow** in plan mode. The `
 
 Produces a single combined document instead of 3 separate files. Use for small features.
 The output is a single `.gspec/spec.md` with three sections: `Context`, `Requirements`, and `Approach`.
+gspec still checks the current `.gspec/` state first, and may ask whether to update or start fresh if a spec already exists.
 See `examples/quick.md` for a full example.
 
 ### Start a new project
@@ -142,6 +143,7 @@ Switch to plan mode (`Shift+Tab` to cycle modes) and give it context:
 ```
 
 Copilot can then generate tasks and implement using the `.gspec/` artifacts as context.
+For named features, reference the files under `.gspec/features/<name>/` instead of the root paths.
 
 ### Plan multiple features (brownfield)
 
@@ -152,7 +154,7 @@ Copilot can then generate tasks and implement using the `.gspec/` artifacts as c
 > gspec status                 # Resume and see what already exists
 ```
 
-Features get their own subdirectory under `.gspec/features/`. Re-running a phase with the same feature name continues that feature's artifacts.
+Features get their own subdirectory under `.gspec/features/`. For example, `gspec specify wishlist` writes `.gspec/features/wishlist/spec.md`, and `gspec plan wishlist` writes `.gspec/features/wishlist/plan.md`. Re-running a phase with the same feature name continues that feature's artifacts.
 
 ---
 
@@ -230,7 +232,7 @@ The agent doesn't just take dictation — it **actively challenges** your requir
 - Surfaces implicit requirements ("This will need authentication — is that in scope?")
 - Clarifies priorities ("If you shipped half of this, which half matters most?")
 
-Output uses plain-language requirements, not user story ceremony. Optionally creates a **GitHub Issue** from the spec for project tracking.
+Output uses plain-language requirements, not user story ceremony. It can also optionally create a **GitHub Issue** from the spec for project tracking when the repo has a GitHub remote and `gh` is available/authenticated.
 
 ### Plan (Phase 3) — *optional*
 
@@ -266,7 +268,7 @@ gspec is built specifically for Copilot CLI, not just running on it:
 | **`/research`** | Greenfield explore suggests deep domain research via Copilot's multi-source research |
 | **`@` file mentions** | Handoff prompts use `@.gspec/context.md`, `@.gspec/spec.md`, and `@.gspec/plan.md` to pass persistent context |
 | **Plan mode** | Handoff suggests `Shift+Tab` to enter plan mode for task generation |
-| **`gh` CLI** | Optionally creates GitHub Issues from the spec for project tracking |
+| **`gh` CLI** | Optionally creates GitHub Issues from the spec for project tracking when `gh` is available and authenticated |
 | **Skills system** | User-level skill — auto-discovered in every session, every project |
 
 ---
@@ -292,15 +294,13 @@ gspec-skill/
 
 ## Design Philosophy
 
-| Principle | What it means |
-|-----------|--------------|
-| **Spec before code** | Think about *what* and *why* before *how*. Reduces rework. |
-| **Simple until proven otherwise** | Start with the simplest design. Add complexity only when a requirement demands it. |
-| **Lightweight** | No external tools, no installs, no config. One skill file. |
-| **Conversational** | The agent asks questions, challenges assumptions, and suggests what you might be missing. |
-| **Incremental** | Run one phase or all three. Resume across sessions. Update artifacts anytime. |
-| **Opinionated** | Recommends tech stacks and libraries — doesn't just ask what you want. |
-| **Universal** | Works with any language, framework, or project type. |
+- **Spec before code** — Think about *what* and *why* before *how*.
+- **Simple until proven otherwise** — Start with the simplest design that meets the need.
+- **Lightweight** — No external tools, no installs, no config.
+- **Conversational** — The agent asks questions, challenges assumptions, and fills obvious gaps.
+- **Incremental** — Run one phase or all three, then resume later if needed.
+- **Lightly opinionated** — Opinionated about process, but flexible on solutions.
+- **Universal** — Works with any language, framework, or project type.
 
 ---
 

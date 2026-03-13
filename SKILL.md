@@ -48,6 +48,13 @@ The user controls which phase to run. Listen for:
 
 If the user says "gspec" with a description of what they want to build, run all phases sequentially, pausing after each to confirm before proceeding.
 
+If the user includes a trailing feature name after a phase command, treat it as the active feature and use the feature subdirectory:
+
+- `gspec specify wishlist` → write `.gspec/features/wishlist/spec.md`
+- `gspec plan wishlist` → write `.gspec/features/wishlist/plan.md`
+
+If no feature name is provided, use the root artifacts (`.gspec/spec.md`, `.gspec/plan.md`).
+
 **Fast-track:** If the user says "gspec quick" with a description, produce a single combined `.gspec/spec.md` containing:
 
 ```markdown
@@ -87,7 +94,7 @@ Suggested next step: gspec plan
 
 If the user asked for a specific phase, proceed with it. If they just said "gspec", suggest the next logical phase based on what exists.
 
-If artifacts already exist and the user re-runs a phase, ask whether they want to **update** the existing artifact or **start fresh**. For multi-feature projects, ask which feature they're working on.
+If artifacts already exist and the user re-runs a phase, ask whether they want to **update** the existing artifact or **start fresh**. For multi-feature projects, ask which feature they're working on unless it is already explicit in the command.
 
 ---
 
@@ -280,7 +287,12 @@ Write freeform markdown. Keep it practical — no ceremony.
 
 After writing, **run the Self-Review Quality Gate** (see below) for the spec, then present the summary and ask the user to confirm or refine.
 
-**Offer to create a GitHub Issue** from the spec if the project is a git repo with a GitHub remote. Use `gh issue create` with the spec content as the body. This ties the spec to the project's issue tracker — trackable, commentable, and linkable to future PRs. Only offer, don't push — the user may prefer to keep specs local.
+**Offer to create a GitHub Issue** from the spec only if all of these are true:
+- the project is a git repo
+- it has a GitHub remote
+- `gh` is installed and authenticated
+
+Use `gh issue create` with the spec content as the body. If any prerequisite is missing, skip the offer or explain why it is unavailable. Only offer, don't push — the user may prefer to keep specs local.
 
 ---
 
@@ -375,6 +387,8 @@ Once the last needed artifact is complete, actively help the user transition:
 2. **Give the user a ready-to-use prompt** they can copy. Example:
 
    > "Implement the feature described in .gspec/plan.md, following the coding patterns in .gspec/context.md. Reference .gspec/spec.md for requirements."
+
+   For named features, use the paths under `.gspec/features/<name>/` in the handoff prompt.
 
 3. **Suggest switching to plan mode** (`Shift+Tab`) — Copilot's native mode for task generation and implementation
 4. **Remind the user** that `.gspec/` artifacts persist — in any future session on this project, they can say `@.gspec/context.md` to give the agent full codebase context instantly

@@ -21,6 +21,10 @@ If you change the workflow, keep these files aligned:
    - Brownfield: `gspec explore`
    - Greenfield: `gspec`
    - Quick path: `gspec quick`
+   - Named feature path: `gspec specify wishlist` then `gspec plan wishlist`
+   - Re-run behavior: confirm the skill asks whether to update or start fresh when artifacts already exist
+   - Brownfield extras: verify the `.github/copilot-instructions.md` offer still makes sense
+   - GitHub repo extras: if `gh` is installed and authenticated, verify the GitHub Issue offer; otherwise verify it is skipped cleanly
 4. Check that the generated markdown still matches the documented format.
 
 ## Contribution bar
