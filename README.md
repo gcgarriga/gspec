@@ -1,10 +1,19 @@
-# gspec
-
-**Minimal spec-driven development for GitHub Copilot CLI.**
-
-Think before you code. Explore → Specify → Plan → then let Copilot build it.
-
-**Quick links:** [Installation](#installation) · [Quick Start](#quick-start) · [Examples](#examples) · [When to use gspec](#when-to-use-gspec) · [FAQ](#faq)
+<div align="center">
+  <h1>gspec</h1>
+  <p><strong>Minimal spec-driven development for GitHub Copilot CLI.</strong></p>
+  <p>Explore → Specify → Plan → then let Copilot build it.</p>
+  <p>
+    <img alt="GitHub Copilot CLI skill" src="https://img.shields.io/badge/GitHub%20Copilot%20CLI-skill-0969da">
+    <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-2ea043">
+  </p>
+  <p>
+    <a href="#installation">Installation</a> ·
+    <a href="#quick-start">Quick Start</a> ·
+    <a href="#examples">Examples</a> ·
+    <a href="#when-to-use-gspec">When to use</a> ·
+    <a href="#faq">FAQ</a>
+  </p>
+</div>
 
 ---
 
@@ -18,15 +27,28 @@ gspec writes persistent artifacts to `.gspec/`, so future Copilot sessions can r
 
 Works with **any tech stack**, **any project type**, **greenfield or brownfield**.
 
+```mermaid
+flowchart LR
+    A[Idea or feature request] --> B[Explore]
+    B --> C[.gspec/context.md]
+    C --> D[Specify]
+    D --> E[.gspec/spec.md]
+    E --> F[Plan]
+    F --> G[.gspec/plan.md]
+    G --> H[Copilot plan mode]
+```
+
 ---
 
 ## Why gspec?
 
-- **It gives Copilot durable memory for a project.** `context.md`, `spec.md`, and `plan.md` survive across sessions.
-- **It is especially useful in brownfield work.** Explore captures architecture, patterns, strengths, and debt before implementation starts.
-- **It improves requirement quality.** Specify challenges vague asks and turns them into scoped, decision-ready requirements.
-- **It keeps planning lightweight.** Plan recommends concrete approaches and libraries without replacing Copilot's native task workflow.
-- **It is Copilot-native.** It can suggest `/research`, generate `copilot-instructions.md`, and hand off cleanly with `@` file mentions.
+| What gspec adds | Why it matters |
+|---|---|
+| **Persistent project memory** | `context.md`, `spec.md`, and `plan.md` survive across sessions, so Copilot does not have to rediscover the project every time. |
+| **Brownfield understanding first** | Explore captures architecture, patterns, strengths, and technical debt before implementation starts. |
+| **Better requirement shaping** | Specify challenges vague asks and turns them into scoped, decision-ready requirements. |
+| **Lightweight planning** | Plan recommends concrete approaches and libraries without replacing Copilot's native task workflow. |
+| **Copilot-native handoff** | gspec can suggest `/research`, generate `copilot-instructions.md`, and hand off cleanly with `@` file mentions. |
 
 ---
 
