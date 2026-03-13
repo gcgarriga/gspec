@@ -21,7 +21,7 @@ Works with **any tech stack**, **any project type**, **greenfield or brownfield*
 ### Option 1: Clone (recommended)
 
 ```bash
-git clone https://github.com/YOUR_USER/gspec.git ~/.copilot/skills/gspec-skill
+git clone https://github.com/gcgarriga/gspec.git ~/.copilot/skills/gspec-skill
 ```
 
 ### Option 2: Manual copy
