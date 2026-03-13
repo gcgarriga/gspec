@@ -1,0 +1,7 @@
+{
+    "name": "gspec",
+    "description": "Minimal spec-driven development workflow for exploring codebases, defining requirements, and planning implementation.",
+    "author": {
+        "name": "gcgarriga"
+    }
+}

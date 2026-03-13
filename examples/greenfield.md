@@ -1,0 +1,199 @@
+# Example: Greenfield Project
+
+A realistic example of using gspec to start a new project from scratch.
+
+---
+
+**User:** gspec — I want to build a CLI tool for managing my dotfiles across machines.
+
+**Agent:**
+
+```
+📋 gspec status:
+No .gspec/ directory found. Starting fresh.
+```
+
+Starting gspec workflow. Since this directory is empty, I'll treat this as a greenfield project.
+
+### Phase 1: Explore
+
+Let me capture the project intent. A few questions:
+
+1. What kind of dotfiles? (shell configs, editor settings, git config, all of the above?)
+2. How should syncing work? (git-based, symlinks, copy?)
+3. Target platforms? (macOS, Linux, both?)
+4. Any specific tools you always configure? (vim, zsh, tmux, etc.)
+5. Is this for personal use or are you building it for others too?
+
+**User:** All dotfiles. Git-based with symlinks. macOS and Linux. I mainly use zsh, neovim, and tmux. Personal use but I'd like it clean enough to share.
+
+**Agent:** ✅ Wrote `.gspec/context.md`
+
+```markdown
+# Project Context
+
+**Type:** greenfield
+**Date:** 2025-03-12
+
+## Project Intent
+CLI tool for managing dotfiles across macOS and Linux machines.
+Syncs via git, deploys via symlinks. Should be clean enough to open-source.
+
+## Domain
+Developer tooling — personal configuration management.
+
+## Target Users
+The developer themselves, across multiple machines. Potentially other developers.
+
+## Key Constraints
+- Must work on macOS and Linux
+- Git-based version control for configs
+- Symlink deployment (not copy)
+- Primary configs: zsh, neovim, tmux
+- Clean enough for public release
+```
+
+Does this capture the intent correctly? Anything to add about scale or integrations?
+
+---
+
+**User:** gspec specify
+
+**Agent:** Based on the project context, let me define what this tool should do. A few clarifying questions:
+
+1. Should it handle machine-specific configs? (e.g., work laptop vs personal)
+2. Should it support "profiles" or groups of configs?
+3. What happens on first setup on a new machine — interactive or declarative?
+4. What if a dotfile already exists at the target location — overwrite, backup, or ask?
+5. Should it support nested directories (e.g., `~/.config/nvim/` entire tree)?
+
+**User:** Yes to machine-specific. No profiles needed. First setup should be a single command. Backup existing files before overwriting. Yes to nested directories.
+
+**Agent:** ✅ Wrote `.gspec/spec.md`
+
+```markdown
+# Specification: dotm (dotfile manager)
+
+## Overview
+A CLI tool that manages dotfiles via a git repository with symlink deployment.
+Supports machine-specific overrides and nested config directories.
+One command to bootstrap a new machine.
+
+## Requirements
+- `dotm init <repo-url>` — clone repo, backup existing files, create symlinks
+- `dotm add <path>` — move file/directory to repo, create symlink in original location
+- `dotm remove <path>` — restore original file from repo, remove symlink
+- `dotm sync` — git pull + push, relink if any symlinks are broken
+- `dotm status` — show tracked files, link health, sync state
+- `dotm list` — list all tracked dotfiles
+- Machine-specific configs via hostname-based directory (e.g., `hosts/work-macbook/`)
+- Backup originals to `~/.dotm-backup/` before overwriting
+
+## Constraints
+- Fast — operations should complete in <1s for typical dotfile sets (~50 files)
+- No runtime dependencies beyond git
+
+## Out of Scope
+- GUI, profiles, encryption, secrets management, Windows support (for now)
+
+## Open Questions
+- Should `dotm add` automatically commit, or require explicit `dotm sync`?
+```
+
+---
+
+**User:** gspec plan
+
+**Agent:** Let me recommend a tech stack based on the requirements.
+
+Given this is a CLI tool that needs to be fast, dependency-free, and cross-platform (macOS + Linux), here are my recommendations:
+
+**Option 1 (Recommended): Rust with clap**
+- Compiles to single binary, zero runtime deps
+- Excellent cross-platform support
+- `clap` for CLI parsing, `dialoguer` for interactive prompts
+- Fast by default
+- Tradeoff: steeper learning curve if new to Rust
+
+**Option 2: Go with cobra**
+- Single binary, cross-platform
+- `cobra` for CLI, simpler learning curve
+- Slightly larger binaries than Rust
+- Great stdlib for file operations
+
+**Option 3: Shell script (bash)**
+- Zero compilation, runs everywhere
+- But: harder to maintain, poor error handling, no type safety
+
+Which do you prefer?
+
+**User:** Rust.
+
+**Agent:** ✅ Wrote `.gspec/plan.md`
+
+```markdown
+# Implementation Plan: dotm
+
+## Architecture
+Single-binary CLI application. No daemon, no server.
+
+```
+dotm (binary)
+├── cli        — clap command definitions and argument parsing
+├── config     — dotm configuration (tracked files, host mappings)
+├── linker     — symlink creation, backup, and health checking
+├── repo       — git operations (clone, pull, push, status)
+└── host       — hostname detection and host-specific overrides
+```
+
+## Tech Stack
+- **Language:** Rust (latest stable)
+- **CLI framework:** clap v4 with derive macros
+- **Git operations:** git2-rs (libgit2 bindings) for programmatic git, with fallback to system git
+- **File operations:** std::fs + walkdir for recursive directory handling
+- **Config format:** TOML via serde + toml crate — stored as `.dotm.toml` in repo root
+- **Error handling:** anyhow for application errors, thiserror for library errors
+- **Testing:** built-in Rust test framework + assert_cmd for CLI integration tests + tempdir for test isolation
+
+## Data Model
+`.dotm.toml` in the repo root:
+- `[files]` — mapping of repo paths to home paths
+- `[hosts.<hostname>]` — host-specific overrides
+- `[settings]` — backup dir, default behavior
+
+## Key Interfaces
+- All commands return structured exit codes (0 = success, 1 = error, 2 = conflicts)
+- `dotm status` outputs machine-parseable format with `--json` flag
+
+## Implementation Approach
+- File-centric: the TOML config is the source of truth for what's tracked
+- Symlinks point from home → repo (so git tracks the actual content)
+- Backup strategy: copy original to ~/.dotm-backup/<timestamp>/ before first link
+- Host overrides: files in hosts/<hostname>/ take precedence over base files
+
+## Risks
+- **Symlink edge cases** — relative vs absolute paths, broken links, circular links. Mitigate with strict validation on add.
+- **Git conflicts during sync** — Mitigate by pulling before pushing, and surfacing conflicts clearly to the user.
+- **Cross-platform path handling** — Mitigate by using Rust's Path abstraction consistently.
+```
+
+---
+
+**Agent:** gspec is done. You now have:
+
+- `.gspec/context.md` — project intent and constraints
+- `.gspec/spec.md` — requirements and scope
+- `.gspec/plan.md` — technical approach
+
+Next, hand off to Copilot's native planning/implementation:
+
+```text
+Implement the feature in .gspec/plan.md following the patterns in .gspec/context.md
+```
+
+Or mention the files directly in a new prompt:
+
+```text
+@.gspec/context.md @.gspec/spec.md @.gspec/plan.md
+Implement dotm.
+```
