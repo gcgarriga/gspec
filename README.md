@@ -278,7 +278,7 @@ Copilot CLI already has excellent native planning/task and implementation capabi
 Just say `gspec` or `gspec status`. The agent reads `.gspec/` and picks up where you left off. That's the whole point — artifacts persist.
 
 **Q: Does `.gspec/` get committed to git?**
-Your choice. The first time gspec creates `.gspec/`, it asks whether to commit the artifacts (shared with teammates, visible in PRs) or keep them local (added to `.gitignore`). Either way works — it's a repo policy decision, not a gspec requirement.
+Your choice. The first time gspec creates `.gspec/`, it asks whether the artifacts should be tracked by git (so they can be shared with teammates and visible in PRs) or kept local by adding `.gspec/` to `.gitignore`. gspec never runs `git commit` for you — you always control what actually gets committed to the repo.
 
 **Q: Can I use this with other AI agents (Claude Code, Cursor, etc.)?**
 The SKILL.md format is Copilot CLI-specific, but the methodology and artifact structure work anywhere. You could adapt the prompts for other agents.
