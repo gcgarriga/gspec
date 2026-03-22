@@ -100,10 +100,10 @@ If artifacts already exist and the user re-runs a phase, ask whether they want t
 
 When creating the `.gspec/` directory for the first time (i.e., it does not already exist), ask the user:
 
-> Should `.gspec/` be committed to git (shared with teammates / visible in PRs) or kept local (added to `.gitignore`)?
+> Should `.gspec/` be tracked in git (shared with teammates / visible in PRs) or kept local (ignored via `.gitignore`)? Note: gspec will not run `git add` or `git commit` for you.
 
-- If **committed** — do nothing extra; the files will be tracked normally.
-- If **local** — append `.gspec/` to the project's `.gitignore` (create the file if it doesn't exist).
+- If **tracked/shared** — do nothing extra; the `.gspec/` directory will remain unignored so you can add and commit it normally.
+- If **local-only** — append `.gspec/` to the project's `.gitignore` (create the file if it doesn't exist).
 
 Only ask once — if `.gspec/` already exists or is already listed in `.gitignore`, skip this question.
 
