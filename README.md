@@ -83,6 +83,8 @@ For named features, spec and plan artifacts can also live under `.gspec/features
 
 Then hand off to Copilot's native **planning/task workflow** in plan mode. The `.gspec/` artifacts persist across sessions — reference them anytime with `@.gspec/context.md`.
 
+The first time `.gspec/` is created, gspec asks whether to **commit it to git** (shared with teammates, visible in PRs) or **keep it local** (added to `.gitignore`). This is a one-time prompt — subsequent runs respect the initial choice.
+
 ---
 
 ## Quick Start
@@ -274,6 +276,9 @@ Copilot CLI already has excellent native planning/task and implementation capabi
 
 **Q: What if I start in one session and continue in another?**
 Just say `gspec` or `gspec status`. The agent reads `.gspec/` and picks up where you left off. That's the whole point — artifacts persist.
+
+**Q: Does `.gspec/` get committed to git?**
+Your choice. The first time gspec creates `.gspec/`, it asks whether to commit the artifacts (shared with teammates, visible in PRs) or keep them local (added to `.gitignore`). Either way works — it's a repo policy decision, not a gspec requirement.
 
 **Q: Can I use this with other AI agents (Claude Code, Cursor, etc.)?**
 The SKILL.md format is Copilot CLI-specific, but the methodology and artifact structure work anywhere. You could adapt the prompts for other agents.

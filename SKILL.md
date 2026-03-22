@@ -96,6 +96,17 @@ If the user asked for a specific phase, proceed with it. If they just said "gspe
 
 If artifacts already exist and the user re-runs a phase, ask whether they want to **update** the existing artifact or **start fresh**. For multi-feature projects, ask which feature they're working on unless it is already explicit in the command.
 
+### First-time setup: ask about git tracking
+
+When creating the `.gspec/` directory for the first time (i.e., it does not already exist), ask the user:
+
+> Should `.gspec/` be committed to git (shared with teammates / visible in PRs) or kept local (added to `.gitignore`)?
+
+- If **committed** — do nothing extra; the files will be tracked normally.
+- If **local** — append `.gspec/` to the project's `.gitignore` (create the file if it doesn't exist).
+
+Only ask once — if `.gspec/` already exists or is already listed in `.gitignore`, skip this question.
+
 ---
 
 ## Phase 1: Explore
