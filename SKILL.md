@@ -27,6 +27,8 @@ Each phase builds on the previous. Artifacts are stored in `.gspec/` at the proj
 
 For projects with multiple features, use `.gspec/features/<feature-name>/` for per-feature artifacts (spec.md, plan.md), while `context.md` stays at the `.gspec/` root since it describes the whole project.
 
+**Context persistence:** `context.md` is project-wide — it describes the codebase, not a feature. Maintain it on the default branch (`main`/`master`) so new branches start with the current version. Existing feature branches need an explicit merge or rebase to pick up later updates. Feature-specific files (`spec.md`, `plan.md`) naturally live on their feature branches.
+
 ## Design Philosophy
 
 These principles govern how gspec thinks — and how it guides future implementation:
@@ -98,14 +100,27 @@ If artifacts already exist and the user re-runs a phase, ask whether they want t
 
 ### First-time setup: ask about git tracking
 
-When creating the `.gspec/` directory for the first time (i.e., it does not already exist), ask the user:
+When creating the `.gspec/` directory for the first time (i.e., it does not already exist), ask the user which artifacts to track in git:
 
-> Should `.gspec/` be tracked in git (shared with teammates / visible in PRs) or kept local (ignored via `.gitignore`)? Note: gspec will not run `git add` or `git commit` for you.
+> Which `.gspec/` artifacts should be tracked in git?
+>
+> - **`context.md`** — describes the whole project. Recommended to track on the default branch so every branch inherits it.
+> - **`spec.md` / `plan.md`** — can be project-wide or feature-specific. Track them if you want specs visible in PRs and shared with teammates.
+> - **Feature directories** (`.gspec/features/`) — feature-specific specs and plans. Track them if you want feature artifacts visible in PRs.
+>
+> Note: gspec will not run `git add` or `git commit` for you.
 
-- If **tracked/shared** — do nothing extra; the `.gspec/` directory will remain unignored so you can add and commit it normally.
-- If **local-only** — append `.gspec/` to the project's `.gitignore` (create the file if it doesn't exist).
+Configure `.gitignore` based on the user's choices. Examples:
 
-Only ask once — if `.gspec/` already exists or is already listed in `.gitignore`, skip this question.
+- **Track everything** — do nothing; `.gspec/` remains unignored.
+- **Track only `context.md`** — add to `.gitignore` (order matters — the exception must come after the wildcard):
+  ```
+  .gspec/*
+  !.gspec/context.md
+  ```
+- **Track nothing** — add `.gspec/` to `.gitignore`.
+
+Only ask once — if `.gspec/` already exists and tracking is already configured, skip this question. However, if `.gitignore` contains a coarse `.gspec/` rule (ignoring everything) and the user re-runs gspec, offer to replace it with a granular configuration (e.g., tracking only `context.md`).
 
 ---
 
@@ -114,6 +129,8 @@ Only ask once — if `.gspec/` already exists or is already listed in `.gitignor
 **Goal:** Build a deep, shared understanding of the project context.
 
 **Output:** `.gspec/context.md`
+
+**Branch guidance:** `context.md` is project-wide — it should be committed to the default branch (`main`/`master`) so every feature branch inherits it. When updating `context.md` from a feature branch, remind the user to merge or cherry-pick the update back to the default branch.
 
 ### Brownfield (existing codebase detected)
 
@@ -435,7 +452,7 @@ The value of gspec is that these artifacts are a **persistent briefing document*
 ## General Rules
 
 1. **Check `.gspec/` status on entry** — report what exists, suggest next step
-2. **On first `.gspec/` creation** — if a `.gitignore` exists, offer to add `.gspec/` to it (let the user decide — some prefer to commit spec artifacts)
+2. **On first `.gspec/` creation** — ask which artifacts to track in git (see "First-time setup" above). Recommend tracking `context.md` on the default branch at minimum.
 3. **Read existing artifacts** before writing new ones — phases build on each other
 4. **Be challenging** — probe for gaps, don't just accept requirements at face value
 5. **Keep artifacts concise** — no boilerplate. Every line should earn its place.
