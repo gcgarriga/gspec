@@ -27,7 +27,7 @@ Each phase builds on the previous. Artifacts are stored in `.gspec/` at the proj
 
 For projects with multiple features, use `.gspec/features/<feature-name>/` for per-feature artifacts (spec.md, plan.md), while `context.md` stays at the `.gspec/` root since it describes the whole project.
 
-**Context persistence:** `context.md` is project-wide — it describes the codebase, not a feature. Maintain it on the default branch (`main`/`master`) so every feature branch inherits it automatically. Feature-specific files (`spec.md`, `plan.md`) naturally live on their feature branches.
+**Context persistence:** `context.md` is project-wide — it describes the codebase, not a feature. Maintain it on the default branch (`main`/`master`) so new branches start with the current version. Existing feature branches need an explicit merge or rebase to pick up later updates. Feature-specific files (`spec.md`, `plan.md`) naturally live on their feature branches.
 
 ## Design Philosophy
 
@@ -113,14 +113,14 @@ When creating the `.gspec/` directory for the first time (i.e., it does not alre
 Configure `.gitignore` based on the user's choices. Examples:
 
 - **Track everything** — do nothing; `.gspec/` remains unignored.
-- **Track only `context.md`** — add to `.gitignore`:
+- **Track only `context.md`** — add to `.gitignore` (order matters — the exception must come after the wildcard):
   ```
   .gspec/*
   !.gspec/context.md
   ```
 - **Track nothing** — add `.gspec/` to `.gitignore`.
 
-Only ask once — if `.gspec/` already exists or is already listed in `.gitignore`, skip this question.
+Only ask once — if `.gspec/` already exists and tracking is already configured, skip this question. However, if `.gitignore` contains a coarse `.gspec/` rule (ignoring everything) and the user re-runs gspec, offer to replace it with a granular configuration (e.g., tracking only `context.md`).
 
 ---
 

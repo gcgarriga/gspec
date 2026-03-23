@@ -83,7 +83,7 @@ For named features, spec and plan artifacts can also live under `.gspec/features
 
 Then hand off to Copilot's native **planning/task workflow** in plan mode. The `.gspec/` artifacts persist across sessions — reference them anytime with `@.gspec/context.md`.
 
-The first time `.gspec/` is created, gspec asks whether to **commit it to git** (shared with teammates, visible in PRs) or **keep it local** (added to `.gitignore`). This is a one-time prompt — subsequent runs respect the initial choice.
+The first time `.gspec/` is created, gspec asks which artifacts to **track in git** — `context.md` (recommended), `spec.md`/`plan.md`, and feature directories can each be tracked or ignored independently.
 
 ---
 
