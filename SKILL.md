@@ -287,6 +287,8 @@ After writing, present a brief summary to the user and ask if anything is missin
    - **Surface implicit requirements:** "You'll need authentication for this — should I include that in scope, or is it already handled?"
    - **Suggest what's missing:** Based on the domain, proactively suggest requirements the user likely hasn't thought of. E.g., for an e-commerce feature: "Should we handle inventory conflicts when two users try to buy the last item?"
    - **Clarify priorities:** "If you had to ship half of this, which half matters most?"
+   - **Separate what from how:** When the user mixes design decisions into requirements ("I want a Redis cache"), separate the need from the solution. Capture the requirement ("Data must be cached to avoid repeated expensive lookups") and move the solution idea to a "Design Notes" section for the Plan phase.
+   - **Push back on premature design choices:** "You're specifying Redis — is caching the requirement, or is Redis specifically? Let's nail down the need first, then pick the solution in the Plan phase."
 4. **Write** `.gspec/spec.md`
 
 ### spec.md Format
@@ -300,8 +302,14 @@ Write freeform markdown. Keep it practical — no ceremony.
 [2-3 sentence summary of what this is and why it matters]
 
 ## Requirements
-[What the system must do — plain language, organized by area. Not user stories.]
-[Example: "Users can add products to their wishlist" — not "As a user, I want to add products..."]
+[Index each requirement so Plan and test scenarios can reference them by ID.]
+
+R1. [First requirement — plain language, not user stories]
+R2. [Second requirement]
+R3. ...
+
+## Design Notes
+[Optional — solution ideas the user mentioned during Specify that were separated from requirements. These feed into the Plan phase. Delete if empty.]
 
 ## Constraints
 [Performance, security, accessibility, scale — only what actually matters for this project]
@@ -337,7 +345,17 @@ Use `gh issue create` with the spec content as the body. If any prerequisite is 
 ### Process
 
 1. **Read** `.gspec/context.md` and `.gspec/spec.md`
-2. **Recommend a tech stack** before asking for preferences:
+2. **Ask for the user's design ideas first** — before recommending anything:
+   - "Do you have thoughts on how you'd approach this? Architecture ideas, tech preferences, patterns you'd like to use?"
+   - Let them braindump freely — accept rough, mixed, incomplete input
+   - Review any "Design Notes" captured in `spec.md` during the Specify phase
+   - **Push back on design flaws:**
+     - **Over-engineering:** "You suggested microservices, but the spec has 3 endpoints and one data model. A monolith with clean module boundaries would be simpler — what's driving the microservices choice?"
+     - **Contradictions with spec:** "Your spec says 'must work offline' (R3) but this architecture requires a live API — which takes priority?"
+     - **Unnecessary complexity:** "Do you need a message queue here, or would a simple background job cover it?"
+   - Acknowledge good ideas explicitly — adopt them with rationale
+   - If the user has no design ideas, that's fine — proceed with agent recommendations
+3. **Recommend a tech stack:**
    - Analyze the requirements from `spec.md` and context from `context.md`
 
    **For brownfield:** The tech stack is mostly decided. Focus on:
@@ -355,7 +373,7 @@ Use `gh issue create` with the spec content as the body. If any prerequisite is 
    - **Cite your research** when it influences a recommendation
 
    **Ask the user** which option they prefer, or if they have a different stack in mind
-3. **Create the implementation plan** covering:
+4. **Create the implementation plan** covering:
    - **Architecture overview** — High-level design, component diagram in text
    - **Tech stack** — Specific technologies and versions with rationale
    - **Data model** — Key entities and relationships (if applicable)
@@ -366,13 +384,18 @@ Use `gh issue create` with the spec content as the body. If any prerequisite is 
 
    **Right-size the plan:** Not every section is needed. Skip sections that don't apply. A CLI tool might only need Tech Stack + Implementation Approach. A full-stack app needs most sections. Ask: "Would removing this section lose important information?" If no, cut it.
 
-4. **Simplicity check** — Before writing, ask yourself:
+5. **Simplicity check** — Before writing, ask yourself:
    - Is this the simplest architecture that meets ALL the requirements?
    - Am I adding layers/abstractions that aren't justified by a concrete requirement?
    - Could I remove a dependency and use stdlib instead?
    - Am I pattern-matching from "best practices" or from actual project needs?
    If the plan feels heavy, simplify it. Challenge your own recommendations.
-5. **Write** `.gspec/plan.md`
+6. **Outline key test scenarios** — Map critical test cases to requirement indexes:
+   - Focus on scenarios that verify the spec is met, not exhaustive test plans
+   - Each scenario references one or more Rx: "Test: R2, R5 — user cannot access another user's data after session expires"
+   - Include happy paths, key error paths, and edge cases from the spec
+   - This is a lightweight verification frame, not a full test suite — keep it to the scenarios that matter most
+7. **Write** `.gspec/plan.md`
 
 ### plan.md Format
 
@@ -401,6 +424,12 @@ Write freeform markdown. Include:
 
 ## Risks
 [What could go wrong and how to mitigate]
+
+## Test Scenarios
+[Key scenarios that verify spec requirements — reference Rx identifiers. Skip if obvious from spec.]
+- R1, R3: [scenario description]
+- R2: [scenario description]
+- R4, R5: [edge case scenario]
 ```
 
 After writing, **run the Self-Review Quality Gate** (see below) for the plan, then present the summary and ask the user to confirm or refine.
@@ -436,16 +465,26 @@ The value of gspec is that these artifacts are a **persistent briefing document*
 4. No section is just a list of names — each has enough explanation to be actionable
 
 ### Spec
-1. No false open questions — if it's a technical fact, it's a requirement, not a question
-2. Error paths covered for every integration point
-3. No vague "automatically" without specifying the mechanism
-4. State management is explicit if the system has loops or accumulating data
+1. Every requirement has an index (R1, R2...) — no unnumbered requirements
+2. No false open questions — if it's a technical fact, it's a requirement, not a question
+3. Error paths covered for every integration point
+4. No vague "automatically" without specifying the mechanism
+5. State management is explicit if the system has loops or accumulating data
+6. Design ideas are in "Design Notes", not mixed into requirements
 
 ### Plan
-1. Simplest architecture that meets all requirements — nothing speculative
-2. Environment setup commands included if dependencies are listed
-3. No vague verbs — "parse JSON into dict" not "handle the response"
-4. Complexity distributed evenly — no step does >3 things while others do 1
+1. Every Rx from spec.md is addressed — no orphaned requirements
+2. Simplest architecture that meets all requirements — nothing speculative
+3. Environment setup commands included if dependencies are listed
+4. No vague verbs — "parse JSON into dict" not "handle the response"
+5. Complexity distributed evenly — no step does >3 things while others do 1
+6. If user provided design ideas, they are either adopted with rationale or rejected with explanation
+7. Test scenarios reference valid Rx identifiers from the spec
+
+### Cross-artifact consistency
+1. Before writing any artifact, re-read upstream artifacts and flag conflicts with the user
+2. Plan does not contradict constraints or scope boundaries in spec
+3. If re-running a phase, warn about stale downstream artifacts ("spec.md was updated — plan.md may need updating too")
 
 ---
 

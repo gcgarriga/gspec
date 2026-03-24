@@ -110,19 +110,19 @@ and receive email notifications when wishlist items drop in price.
 ## Requirements
 
 ### Wishlist CRUD
-- POST /api/wishlist/items — add product to wishlist (creates wishlist if none exists)
-- DELETE /api/wishlist/items/:productId — remove product from wishlist
-- GET /api/wishlist — get current user's wishlist with products, current prices, and price-at-add
+R1. POST /api/wishlist/items — add product to wishlist (creates wishlist if none exists)
+R2. DELETE /api/wishlist/items/:productId — remove product from wishlist
+R3. GET /api/wishlist — get current user's wishlist with products, current prices, and price-at-add
 
 ### Sharing
-- POST /api/wishlist/share — generate or retrieve shareable link (idempotent)
-- GET /api/wishlist/shared/:shareToken — view shared wishlist (public, no auth)
-- DELETE /api/wishlist/share — revoke shareable link
+R4. POST /api/wishlist/share — generate or retrieve shareable link (idempotent)
+R5. GET /api/wishlist/shared/:shareToken — view shared wishlist (public, no auth)
+R6. DELETE /api/wishlist/share — revoke shareable link
 
 ### Notifications
-- Background job: periodically check product prices against wishlist items' price-at-add
-- Send email when price drops below price-at-add
-- Don't re-notify for the same price drop (track last notified price)
+R7. Background job: periodically check product prices against wishlist items' price-at-add
+R8. Send email when price drops below price-at-add
+R9. Don't re-notify for the same price drop (track last notified price)
 
 ## Constraints
 - Wishlist queries should be <100ms for up to 500 items
@@ -141,7 +141,21 @@ and receive email notifications when wishlist items drop in price.
 
 **User:** gspec plan
 
-**Agent:** Since this is brownfield, I'll follow the existing patterns (service layer, Prisma, Zod).
+**Agent:** Before I recommend anything — do you have thoughts on how you'd approach this? Architecture ideas, tech preferences, patterns you'd like to use?
+
+**User:** I was thinking we could use a separate microservice for the notifications part, with its own database. And maybe GraphQL for the wishlist queries since they're nested.
+
+**Agent:** Let me push back on a couple of things:
+
+1. **Microservice for notifications** — the spec has 9 requirements total, and this is a monolith with a clear service-layer pattern. A separate service means a new deployment, a new database, network calls between services, and operational complexity — all for one background job. I'd recommend keeping it in the same process as a BullMQ worker. You can always extract it later if scale demands it.
+
+2. **GraphQL** — the existing API is REST with Express. Adding GraphQL for one feature introduces a new paradigm, a new dependency, and a learning curve for anyone else reading the code. The nested data (wishlist → items → products) can be handled with a single Prisma query and a well-shaped REST response.
+
+Both ideas solve real concerns (decoupling, nested queries), but simpler solutions exist that match your existing patterns. What do you think?
+
+**User:** Fair points. Let's keep it in the monolith and stick with REST.
+
+**Agent:** Good call. Since this is brownfield, I'll follow the existing patterns (service layer, Prisma, Zod).
 
 For the new email infrastructure, here are my recommendations:
 
@@ -226,6 +240,19 @@ Relations: User 1:1 Wishlist, Wishlist 1:N WishlistItem, WishlistItem N:1 Produc
 - **Redis as new dependency** — adds operational complexity. Mitigate: add to existing Docker Compose, document setup.
 - **Email deliverability** — Resend handles this, but need to verify sender domain.
 - **Price check at scale** — hourly check across all wishlists could be slow with many users. Mitigate: batch queries, paginate, and add index on WishlistItem.productId.
+
+## Test Scenarios
+- R1: Add product to wishlist → creates wishlist if none, returns item with priceAtAdd
+- R1: Add duplicate product → returns 409 or idempotent success
+- R2: Remove product → returns 204, item no longer in GET response
+- R3: Get wishlist → includes current prices and price deltas from priceAtAdd
+- R4: Generate share link → returns stable URL, second call returns same token
+- R5: View shared wishlist without auth → returns wishlist content
+- R5: View shared wishlist with invalid token → returns 404
+- R6: Revoke share link → shared URL returns 404 after revocation
+- R7, R8: Price drops below priceAtAdd → email sent with correct product info
+- R9: Same price drop re-checked → no duplicate email sent
+- R7: Price increases → no notification
 ```
 
 ---

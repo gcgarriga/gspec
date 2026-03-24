@@ -92,14 +92,14 @@ Supports machine-specific overrides and nested config directories.
 One command to bootstrap a new machine.
 
 ## Requirements
-- `dotm init <repo-url>` — clone repo, backup existing files, create symlinks
-- `dotm add <path>` — move file/directory to repo, create symlink in original location
-- `dotm remove <path>` — restore original file from repo, remove symlink
-- `dotm sync` — git pull + push, relink if any symlinks are broken
-- `dotm status` — show tracked files, link health, sync state
-- `dotm list` — list all tracked dotfiles
-- Machine-specific configs via hostname-based directory (e.g., `hosts/work-macbook/`)
-- Backup originals to `~/.dotm-backup/` before overwriting
+R1. `dotm init <repo-url>` — clone repo, backup existing files, create symlinks
+R2. `dotm add <path>` — move file/directory to repo, create symlink in original location
+R3. `dotm remove <path>` — restore original file from repo, remove symlink
+R4. `dotm sync` — git pull + push, relink if any symlinks are broken
+R5. `dotm status` — show tracked files, link health, sync state
+R6. `dotm list` — list all tracked dotfiles
+R7. Machine-specific configs via hostname-based directory (e.g., `hosts/work-macbook/`)
+R8. Backup originals to `~/.dotm-backup/` before overwriting
 
 ## Constraints
 - Fast — operations should complete in <1s for typical dotfile sets (~50 files)
@@ -116,9 +116,15 @@ One command to bootstrap a new machine.
 
 **User:** gspec plan
 
-**Agent:** Let me recommend a tech stack based on the requirements.
+**Agent:** Before I recommend a stack — do you have any thoughts on how you'd approach this? Language preferences, architecture ideas, patterns you'd like to follow?
 
-Given this is a CLI tool that needs to be fast, dependency-free, and cross-platform (macOS + Linux), here are my recommendations:
+**User:** I was thinking maybe a shell script since it's just file operations. Or Python.
+
+**Agent:** Shell script is tempting for dotfile management — it's what many dotfile repos use. But the spec has 8 commands, machine-specific overrides (R7), nested directory handling, and backup logic. That's complex enough that a shell script would become hard to maintain and test. I'd push back on that.
+
+Python would work, but you'd need to package it (pip, pipx, or a shim script) and it adds a runtime dependency — which conflicts with your "no runtime dependencies beyond git" constraint.
+
+Let me recommend three options that compile to a single binary:
 
 **Option 1 (Recommended): Rust with clap**
 - Compiles to single binary, zero runtime deps
@@ -187,6 +193,19 @@ dotm (binary)
 - **Symlink edge cases** — relative vs absolute paths, broken links, circular links. Mitigate with strict validation on add.
 - **Git conflicts during sync** — Mitigate by pulling before pushing, and surfacing conflicts clearly to the user.
 - **Cross-platform path handling** — Mitigate by using Rust's Path abstraction consistently.
+
+## Test Scenarios
+- R1: Init with valid repo URL → clones, backs up existing files, creates symlinks
+- R1: Init when dotfiles already exist at targets → backs up to ~/.dotm-backup/
+- R2: Add a single file → moves to repo, symlink points back to repo copy
+- R2: Add a nested directory (e.g., ~/.config/nvim/) → entire tree moved and linked
+- R3: Remove a tracked file → symlink removed, original restored from repo
+- R4: Sync when remote has changes → pulls, updates symlinks if new files added
+- R4: Sync with broken symlinks → relinks them
+- R5: Status shows tracked files, link health, and git sync state
+- R7: Host-specific override exists → uses host file instead of base file
+- R7: No host-specific override → falls back to base file
+- R8: Backup directory preserves timestamps and doesn't overwrite previous backups
 ```
 
 ---

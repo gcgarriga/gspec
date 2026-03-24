@@ -35,8 +35,8 @@ Works with **any tech stack**, **any project type**, **greenfield or brownfield*
 |---|---|
 | **Persistent project memory** | `context.md`, `spec.md`, and `plan.md` survive across sessions, so Copilot does not have to rediscover the project every time. |
 | **Brownfield understanding first** | Explore captures architecture, patterns, strengths, and technical debt before implementation starts. |
-| **Better requirement shaping** | Specify challenges vague asks and turns them into scoped, decision-ready requirements. |
-| **Lightweight planning** | Plan recommends concrete approaches and libraries without replacing Copilot's native task workflow. |
+| **Better requirement shaping** | Specify challenges vague asks, separates *what* from *how*, and indexes requirements (R1, R2…) for traceability across plan and test scenarios. |
+| **Lightweight planning** | Plan asks for your design ideas first, pushes back on flaws, then recommends concrete approaches — without replacing Copilot's native task workflow. |
 | **Copilot-native handoff** | gspec can suggest `/research`, generate `copilot-instructions.md`, and hand off cleanly with `@` file mentions. |
 
 ---
@@ -203,6 +203,9 @@ The agent doesn't just take dictation — it **actively challenges** your requir
 - Challenges assumptions ("You said real-time — do you need WebSockets, or is polling OK?")
 - Surfaces implicit requirements ("This will need authentication — is that in scope?")
 - Clarifies priorities ("If you shipped half of this, which half matters most?")
+- Separates what from how ("You're specifying Redis — is caching the requirement, or Redis specifically?")
+
+Requirements are **indexed** (R1, R2, R3…) so the Plan and test scenarios can reference them — keeping everything traceable without extra tooling.
 
 Output uses plain-language requirements, not user story ceremony. It can also optionally create a **GitHub Issue** from the spec for project tracking when the repo has a GitHub remote and `gh` is available/authenticated.
 
@@ -210,10 +213,14 @@ Output uses plain-language requirements, not user story ceremony. It can also op
 
 **Skip this for small features** where implementation is obvious from the spec.
 
-For complex features, the agent **uses web search** to research current options, then **recommends tech stack options** ranked by fit:
+For complex features, the agent **asks for your design ideas first** — you can braindump architecture thoughts, tech preferences, or patterns you'd like to use. Then it **pushes back on design flaws** (over-engineering, contradictions with the spec, unnecessary complexity) before making its own recommendations.
+
+After the design is settled, it **uses web search** to research current options, then **recommends tech stack options** ranked by fit:
 - 2-3 options with tradeoffs, ecosystem maturity, and DX considerations
 - Specific library recommendations for common concerns (auth, validation, testing, ORM)
 - For brownfield: suggestions that complement existing patterns
+
+Finally, it outlines **key test scenarios** mapped to requirement indexes (R1, R2…) — a lightweight verification frame, not a full test suite.
 
 ---
 
