@@ -72,7 +72,7 @@ If no feature name is provided, use the root artifacts (`.gspec/spec.md`, `.gspe
 [How to build it — tech choices, key decisions]
 ```
 
-Use this for small features that don't need 3 separate files.
+Use this for small features that don't need 3 separate files. If `context.md` exists, read it for the Context section — and run the staleness check as usual, since `gspec quick` depends on accurate project context.
 
 ---
 
@@ -83,7 +83,8 @@ Use this for small features that don't need 3 separate files.
 1. Check if `.gspec/` exists
 2. Check which artifacts exist: `context.md`, `spec.md`, `plan.md`
 3. Check for feature subdirectories: `.gspec/features/*/`
-4. Report status to the user:
+4. **Check context.md freshness** (see staleness detection below)
+5. Report status to the user:
 
 ```
 📋 gspec status:
@@ -97,6 +98,49 @@ Suggested next step: gspec plan
 If the user asked for a specific phase, proceed with it. If they just said "gspec", suggest the next logical phase based on what exists.
 
 If artifacts already exist and the user re-runs a phase, ask whether they want to **update** the existing artifact or **start fresh**. For multi-feature projects, ask which feature they're working on unless it is already explicit in the command.
+
+### Staleness detection for context.md
+
+Every time you read `context.md` (on entry, before specify, before plan), check whether it's still current:
+
+1. **Read the `Date:` field** from the context.md header
+2. **Compare against recent git activity:**
+   ```bash
+   # How much has changed since context.md was last updated?
+   git log --oneline --since="YYYY-MM-DD" | wc -l
+   git diff --stat $(git log --until="YYYY-MM-DD" -1 --format=%H)..HEAD -- . ':!.gspec'
+   ```
+3. **Assess impact** — look at *what* changed, not just *how much*:
+   - Changes to the data model (schema files, migrations, ORM models) → Data Layer section is stale
+   - New or removed routes/handlers → Architecture and Key Directories sections are stale
+   - Dependency changes (package.json, go.mod, requirements.txt) → Tech Stack section is stale
+   - New test files or changed test patterns → Testing conventions may be stale
+   - The debt section goes stale fastest — new TODOs, resolved issues, and pattern changes accumulate silently
+
+4. **Report and offer targeted refresh** instead of a full re-explore:
+
+```
+⚠️ context.md may be stale (last updated 2025-03-12, 47 commits since):
+  - prisma/schema.prisma changed — Data Layer section may be outdated
+  - 2 new route files added in src/routes/ — Architecture section may be incomplete
+  - package.json gained 3 new dependencies — Tech Stack section may be outdated
+
+Options:
+  1. Targeted refresh — I'll re-read the changed files and update only the affected sections
+  2. Full re-explore — re-run gspec explore from scratch
+  3. Skip — proceed with current context.md as-is
+```
+
+**Targeted refresh flow:**
+- Re-read only the files that changed since the last explore date
+- Update only the affected sections of context.md, preserving sections that are still accurate
+- Update the `Date:` field to today
+- Present a diff summary of what changed in context.md so the user can verify
+
+**When to skip the staleness check:**
+- The user explicitly said `gspec explore` — they already want a fresh explore, no need to check
+- context.md was updated today — it's current
+- Fewer than 5 commits since the last update and none touch key structural files (schema, entry point, dependencies) — not worth flagging
 
 ### First-time setup: ask about git tracking
 
@@ -192,7 +236,40 @@ Cover these in `.gspec/context.md`:
 5. **Data layer** — Database, ORM, key models and relationships
 6. **How to build, test, and run** — Commands for dev, test, build, deploy
 7. **Patterns and principles** — The prescriptive rules from Step 3. This is the most important section — it tells the agent exactly how to write code that fits this codebase.
-8. **Strengths and debt** — What's well-designed, where the complexity lives
+8. **Strengths** — What's well-designed, what patterns are worth preserving
+9. **Technical debt and known issues** — Structured assessment (see format below)
+
+##### Debt and Issues Format
+
+Don't just list debt as flat bullets. Categorize and prioritize:
+
+```markdown
+## Technical Debt and Known Issues
+
+### Bugs and broken behavior
+[Failing tests, known runtime errors, error-prone code paths. Only include issues you can **verify** — a failing test, an obvious logic error, a documented known issue. Don't speculate.]
+
+### Legacy patterns
+[Patterns that work but don't match current best practices or the project's own stated conventions. Flag when the codebase has two competing approaches (e.g., some routes use middleware auth, others check auth inline) — the inconsistency itself is the issue.]
+
+### Architectural concerns
+[Structural issues that affect maintainability or extensibility. Classify severity:]
+- 🔴 **Blocking** — Would prevent a reasonable feature from being built without refactoring first (e.g., circular dependencies, hardcoded assumptions that break when extended)
+- 🟡 **Costly** — Won't block work but will make it significantly harder or more error-prone (e.g., 600-line god objects, missing abstractions that force duplication)
+- 🟢 **Tolerable** — Worth noting for future cleanup but safe to work around (e.g., inconsistent naming, missing rate limiting)
+
+### Missing infrastructure
+[Standard concerns not yet addressed: logging, monitoring, rate limiting, input sanitization, etc. Only flag what's actually missing — don't list everything a production app "should" have if it's a prototype.]
+```
+
+**How to discover these:**
+- **Read test results** if easily runnable — failing tests are the most reliable bug signal
+- **Search for TODOs, FIXMEs, HACKs, XXXs** — developers leave breadcrumbs
+- **Check issue tracker** if accessible (GitHub Issues via `gh issue list`) for known bugs
+- **Look for inconsistencies** — when 8 routes follow a pattern and 2 don't, that's likely debt, not intentional
+- **Check git blame on complex files** — rapid churn often signals a problem area
+
+The goal is not to audit the codebase exhaustively — it's to surface issues that would **surprise or trip up** someone building a new feature.
 
 #### Step 5: Generate `.github/copilot-instructions.md`
 
@@ -259,7 +336,23 @@ Write freeform markdown. Start with a header and type indicator:
 [rest of content organized by the categories above]
 ```
 
-After writing, present a brief summary to the user and ask if anything is missing or wrong. For brownfield, double-check: are the **patterns and principles** written as actionable rules, not just observations?
+Each major section should end with a brief HTML comment noting the key files it was derived from. This enables targeted refresh — the agent can check if those specific files changed and update only the affected sections:
+
+```markdown
+## Tech Stack
+- **Language:** TypeScript 5.3
+- **Runtime:** Node.js 20
+...
+<!-- Based on: package.json, tsconfig.json -->
+
+## Data Layer
+Prisma with PostgreSQL. Key models: User, Product, Order...
+<!-- Based on: prisma/schema.prisma, prisma/migrations/ -->
+```
+
+These comments are invisible when rendered and cost almost nothing in file size. The agent uses them during staleness detection to map `git diff` output to specific sections.
+
+After writing, present a brief summary to the user and ask if anything is missing or wrong. For brownfield, double-check: are the **patterns and principles** written as actionable rules, not just observations? Is the **debt section** categorized and prioritized, not just a flat list?
 
 ---
 
@@ -380,6 +473,7 @@ Use `gh issue create` with the spec content as the body. If any prerequisite is 
    - **API / Interface design** — Key endpoints, interfaces, or contracts (if applicable)
    - **Key implementation decisions** — Patterns, libraries, approaches chosen and why
    - **Dependencies & prerequisites** — What needs to exist before implementation
+   - **Existing debt to address** — Cross-reference `context.md`'s debt section. Call out any 🔴 Blocking or 🟡 Costly items that directly affect this feature. If a debt item must be fixed before or during implementation, say so explicitly. Don't repeat the full debt list — only the items that matter for *this* feature.
    - **Risks & mitigations** — What could go wrong, how to handle it
 
    **Right-size the plan:** Not every section is needed. Skip sections that don't apply. A CLI tool might only need Tech Stack + Implementation Approach. A full-stack app needs most sections. Ask: "Would removing this section lose important information?" If no, cut it.
@@ -422,6 +516,9 @@ Write freeform markdown. Include:
 ## Dependencies & Prerequisites
 [What needs to be in place before starting]
 
+## Existing Debt to Address
+[Only debt from context.md that directly affects this feature — skip if none]
+
 ## Risks
 [What could go wrong and how to mitigate]
 
@@ -463,6 +560,9 @@ The value of gspec is that these artifacts are a **persistent briefing document*
 2. Architecture describes actual flow, not just folder names
 3. Build/test/run commands are complete — a new dev could get running from this alone
 4. No section is just a list of names — each has enough explanation to be actionable
+5. Debt is categorized (bugs, legacy, architectural, missing infrastructure) and severity-rated — not a flat bullet list
+6. Every debt item is verifiable — based on something you actually found, not speculation about what "should" exist
+7. Major sections have `<!-- Based on: ... -->` source comments for targeted refresh
 
 ### Spec
 1. Every requirement has an index (R1, R2...) — no unnumbered requirements

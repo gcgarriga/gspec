@@ -34,7 +34,7 @@ Works with **any tech stack**, **any project type**, **greenfield or brownfield*
 | What gspec adds | Why it matters |
 |---|---|
 | **Persistent project memory** | `context.md`, `spec.md`, and `plan.md` survive across sessions, so Copilot does not have to rediscover the project every time. |
-| **Brownfield understanding first** | Explore captures architecture, patterns, strengths, and technical debt before implementation starts. |
+| **Brownfield understanding first** | Explore captures architecture, patterns, strengths, and **categorized technical debt** (bugs, legacy patterns, architectural concerns rated by severity) before implementation starts. |
 | **Better requirement shaping** | Specify challenges vague asks, separates *what* from *how*, and indexes requirements (R1, R2…) for traceability across plan and test scenarios. |
 | **Lightweight planning** | Plan asks for your design ideas first, pushes back on flaws, then recommends concrete approaches — without replacing Copilot's native task workflow. |
 | **Copilot-native handoff** | gspec can suggest `/research`, generate `copilot-instructions.md`, and hand off cleanly with `@` file mentions. |
@@ -189,7 +189,7 @@ These examples show both the conversational prompts and the resulting `.gspec/` 
 - Reads the entry point and traces a request end-to-end
 - Reads tests to understand domain boundaries
 - Extracts coding patterns and principles as **rules to follow** (not just observations)
-- Assesses strengths and technical debt
+- Assesses strengths and **categorized technical debt** — bugs, legacy patterns, architectural concerns (severity-rated: 🔴 blocking / 🟡 costly / 🟢 tolerable), and missing infrastructure
 - **Offers to generate or update `.github/copilot-instructions.md`** from the discovered patterns — so every future Copilot session (CLI and VS Code) can automatically follow your codebase conventions
 
 The output is written as a **cold-reader briefing** — any future AI session can read `context.md` and immediately understand the project.
@@ -282,7 +282,7 @@ gspec is built for Copilot CLI. For VS Code, consider [spec-kit](https://github.
 Copilot CLI already has excellent native planning/task and implementation capabilities in plan mode. gspec focuses on what Copilot doesn't do natively: persistent codebase understanding, structured requirements, and researched tech stack planning.
 
 **Q: What if I start in one session and continue in another?**
-Just say `gspec` or `gspec status`. The agent reads `.gspec/` and picks up where you left off. That's the whole point — artifacts persist.
+Just say `gspec` or `gspec status`. The agent reads `.gspec/` and picks up where you left off. If the codebase has changed since `context.md` was last written, gspec detects the drift and offers to update only the affected sections — no need to re-explore from scratch.
 
 **Q: Does `.gspec/` get committed to git?**
 Your choice. The first time gspec creates `.gspec/`, it asks whether the artifacts should be tracked by git (so they can be shared with teammates and visible in PRs) or kept local by adding `.gspec/` to `.gitignore`. gspec never runs `git commit` for you — you always control what actually gets committed to the repo.

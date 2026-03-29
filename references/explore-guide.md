@@ -153,4 +153,63 @@ When exploring, actively form opinions about:
 - **Complexity hotspots** — Which files/modules are unusually large or complex?
 - **Security posture** — How is auth handled? Are secrets in env vars or hardcoded?
 
-These assessments go into the "Strengths and debt" section of `context.md`.
+These assessments go into the "Technical Debt and Known Issues" section of `context.md`.
+
+## Discovering Bugs and Debt
+
+Don't just report what the codebase *is* — assess what's *wrong* with it. Use these concrete techniques:
+
+### 1. Run existing tests (if quick)
+
+```bash
+# Check if a test runner is configured
+grep -E '"test"' package.json 2>/dev/null   # Node
+grep -E 'pytest|unittest' pyproject.toml setup.cfg 2>/dev/null   # Python
+
+# Run tests — only if they complete in a reasonable time
+npm test 2>&1 | tail -30
+pytest --tb=short 2>&1 | tail -30
+go test ./... 2>&1 | tail -30
+```
+
+Failing tests are the most reliable signal of bugs. Note which ones fail and what they test.
+
+### 2. Search for developer breadcrumbs
+
+```bash
+# TODO/FIXME/HACK comments — developers flag their own debt
+grep -rn 'TODO\|FIXME\|HACK\|XXX\|WORKAROUND\|DEPRECATED' --include='*.ts' --include='*.py' --include='*.go' --include='*.rs' --include='*.java' --include='*.rb' . | grep -v node_modules | grep -v vendor
+```
+
+### 3. Find complexity hotspots
+
+```bash
+# Largest source files — complexity concentrates in big files
+find . -name '*.ts' -o -name '*.py' -o -name '*.go' -o -name '*.java' -o -name '*.rb' | grep -v node_modules | grep -v vendor | xargs wc -l 2>/dev/null | sort -rn | head -15
+
+# Files with the most churn (recent changes often = active problem areas)
+git log --format=format: --name-only --since='6 months ago' 2>/dev/null | grep -v '^$' | sort | uniq -c | sort -rn | head -15
+```
+
+### 4. Check the issue tracker
+
+```bash
+# Known bugs from GitHub Issues (if gh is available)
+gh issue list --label bug --state open --limit 10 2>/dev/null
+gh issue list --state open --limit 15 2>/dev/null
+```
+
+### 5. Spot pattern inconsistencies
+
+When tracing code (Steps 3-4 above), watch for:
+- **Two ways of doing the same thing** — e.g., some routes use middleware auth, others check inline. The inconsistency is the debt.
+- **Layer violations** — e.g., a route handler making direct DB queries when a service layer exists
+- **Dead code** — imports that aren't used, functions that are never called, feature flags that are always on/off
+- **Outdated dependencies** — check for deprecation warnings in install output or lock files
+
+### 6. Assess severity
+
+For each issue found, ask: **"If someone tried to build a new feature next week, would this bite them?"**
+- 🔴 **Blocking** — Yes, they'd have to fix this first
+- 🟡 **Costly** — They could work around it, but it would waste significant time
+- 🟢 **Tolerable** — Annoying but not a real obstacle
