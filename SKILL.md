@@ -72,7 +72,7 @@ If no feature name is provided, use the root artifacts (`.gspec/spec.md`, `.gspe
 [How to build it — tech choices, key decisions]
 ```
 
-Use this for small features that don't need 3 separate files.
+Use this for small features that don't need 3 separate files. If `context.md` exists, read it for the Context section — and run the staleness check as usual, since `gspec quick` depends on accurate project context.
 
 ---
 
