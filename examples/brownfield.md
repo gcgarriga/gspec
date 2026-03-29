@@ -72,9 +72,27 @@ Migrations in `prisma/migrations/`.
 - Follow the shared pagination pattern via `?page=&limit=`
 - New features should extend the existing service-layer pattern, not introduce a new abstraction model
 
-## Strengths and debt
-**Strengths:** Consistent service pattern, good test coverage on routes, clean separation of concerns
-**Debt:** No request logging/tracing, payment service is a 600-line monolith that should be split, no rate limiting, some Prisma queries in route handlers (bypassing service layer in 3 places)
+## Strengths
+- Consistent service pattern across all domain modules
+- Good test coverage on routes (~78%) with clean factory-based test setup
+- Clear separation of concerns — routes never contain business logic
+
+## Technical Debt and Known Issues
+
+### Bugs and broken behavior
+- None found — all 142 tests pass, no open bug issues
+
+### Legacy patterns
+- Express 4.18 is current but nearing end-of-life; Express 5 migration will be needed within ~6 months
+- 3 route handlers (orders/create, orders/status, payments/webhook) query Prisma directly, bypassing the service layer — inconsistent with the project's own pattern
+
+### Architectural concerns
+- 🟡 **Costly** — `src/services/payment.ts` is a 600-line monolith handling Stripe integration, refund logic, webhook processing, and receipt generation. Any feature touching payments will require understanding the entire file.
+- 🟢 **Tolerable** — No request logging or distributed tracing. Debugging production issues requires reading raw Stripe/Fly.io logs.
+
+### Missing infrastructure
+- No rate limiting on API endpoints
+- No request logging/tracing (stdout only)
 ```
 
 I can also offer to generate or update `.github/copilot-instructions.md` from the patterns above once you confirm this context is accurate.
@@ -235,6 +253,9 @@ Relations: User 1:1 Wishlist, Wishlist 1:N WishlistItem, WishlistItem N:1 Produc
 - Redis must be running locally (add to docker-compose.yml)
 - Resend API key in environment variables
 - New Prisma migration for Wishlist and WishlistItem models
+
+## Existing Debt to Address
+- 🟡 The 3 route handlers that bypass the service layer (orders/create, orders/status, payments/webhook) set a bad precedent. New wishlist routes **must** use the service layer — don't copy the shortcut pattern. (Not blocking, but worth noting so the implementer doesn't follow the wrong example.)
 
 ## Risks
 - **Redis as new dependency** — adds operational complexity. Mitigate: add to existing Docker Compose, document setup.

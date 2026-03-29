@@ -34,7 +34,7 @@ Works with **any tech stack**, **any project type**, **greenfield or brownfield*
 | What gspec adds | Why it matters |
 |---|---|
 | **Persistent project memory** | `context.md`, `spec.md`, and `plan.md` survive across sessions, so Copilot does not have to rediscover the project every time. |
-| **Brownfield understanding first** | Explore captures architecture, patterns, strengths, and technical debt before implementation starts. |
+| **Brownfield understanding first** | Explore captures architecture, patterns, strengths, and **categorized technical debt** (bugs, legacy patterns, architectural concerns rated by severity) before implementation starts. |
 | **Better requirement shaping** | Specify challenges vague asks, separates *what* from *how*, and indexes requirements (R1, R2…) for traceability across plan and test scenarios. |
 | **Lightweight planning** | Plan asks for your design ideas first, pushes back on flaws, then recommends concrete approaches — without replacing Copilot's native task workflow. |
 | **Copilot-native handoff** | gspec can suggest `/research`, generate `copilot-instructions.md`, and hand off cleanly with `@` file mentions. |
@@ -188,8 +188,7 @@ These examples show both the conversational prompts and the resulting `.gspec/` 
 - Reads your README and documentation
 - Reads the entry point and traces a request end-to-end
 - Reads tests to understand domain boundaries
-- Extracts coding patterns and principles as **rules to follow** (not just observations)
-- Assesses strengths and technical debt
+- Assesses strengths and **categorized technical debt** — bugs, legacy patterns, architectural concerns (severity-rated: 🔴 blocking / 🟡 costly / 🟢 tolerable), and missing infrastructure
 - **Offers to generate or update `.github/copilot-instructions.md`** from the discovered patterns — so every future Copilot session (CLI and VS Code) can automatically follow your codebase conventions
 
 The output is written as a **cold-reader briefing** — any future AI session can read `context.md` and immediately understand the project.
