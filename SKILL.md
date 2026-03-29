@@ -55,9 +55,11 @@ If the user includes a trailing feature name after a phase command, treat it as 
 - `gspec specify wishlist` → write `.gspec/features/wishlist/spec.md`
 - `gspec plan wishlist` → write `.gspec/features/wishlist/plan.md`
 
+Feature names must be a **single slug** (lowercase, hyphens for spaces): `wishlist`, `auth-system`, `price-alerts`. If the user provides a multi-word name without hyphens (e.g., `gspec specify add auth system`), ask them to clarify which part is the feature name. Don't guess.
+
 If no feature name is provided, use the root artifacts (`.gspec/spec.md`, `.gspec/plan.md`).
 
-**Fast-track:** If the user says "gspec quick" with a description, produce a single combined `.gspec/spec.md` containing:
+**Fast-track:** If the user says "gspec quick" with a description, produce a single combined spec.md containing:
 
 ```markdown
 # [Feature Name]
@@ -73,6 +75,12 @@ If no feature name is provided, use the root artifacts (`.gspec/spec.md`, `.gspe
 ```
 
 Use this for small features that don't need 3 separate files. If `context.md` exists, read it for the Context section — and run the staleness check as usual, since `gspec quick` depends on accurate project context.
+
+`gspec quick` follows the same naming rules as other phases:
+- `gspec quick — add a health endpoint` → writes `.gspec/spec.md` (root)
+- `gspec quick health-check — add a health endpoint` → writes `.gspec/features/health-check/spec.md`
+
+If a `spec.md` already exists at the target path, apply the same "update or start fresh" rule — ask before overwriting.
 
 ---
 
@@ -104,11 +112,11 @@ If artifacts already exist and the user re-runs a phase, ask whether they want t
 Every time you read `context.md` (on entry, before specify, before plan), check whether it's still current:
 
 1. **Read the `Date:` field** from the context.md header
-2. **Compare against recent git activity:**
+2. **Compare against recent git activity** (skip this step if the project is not a git repo — fall back to comparing the `Date:` field against today's date and warn if it's more than 2 weeks old):
    ```bash
-   # How much has changed since context.md was last updated?
-   git log --oneline --since="YYYY-MM-DD" | wc -l
-   git diff --stat $(git log --until="YYYY-MM-DD" -1 --format=%H)..HEAD -- . ':!.gspec'
+   # What changed since context.md was last updated?
+   git log --oneline --since="YYYY-MM-DD" -- . ':!.gspec' | wc -l
+   git log --stat --since="YYYY-MM-DD" -- . ':!.gspec' | head -60
    ```
 3. **Assess impact** — look at *what* changed, not just *how much*:
    - Changes to the data model (schema files, migrations, ORM models) → Data Layer section is stale
@@ -136,6 +144,7 @@ Options:
 - Update only the affected sections of context.md, preserving sections that are still accurate
 - Update the `Date:` field to today
 - Present a diff summary of what changed in context.md so the user can verify
+- If the Patterns and Principles section was updated and `.github/copilot-instructions.md` exists, remind the user that `copilot-instructions.md` may also need updating to stay in sync
 
 **When to skip the staleness check:**
 - The user explicitly said `gspec explore` — they already want a fresh explore, no need to check
@@ -182,6 +191,8 @@ Detection heuristic:
 - If `package.json`, `Cargo.toml`, `go.mod`, `requirements.txt`, `*.csproj`, `Gemfile`, `pom.xml`, or similar exist → brownfield
 - If directory has significant source files (>5 non-config files) → brownfield
 - Otherwise → greenfield
+
+**Monorepo detection:** If you find `turbo.json`, `nx.json`, `lerna.json`, `pnpm-workspace.yaml`, or multiple independent dependency files in subdirectories (`packages/`, `apps/`, `services/`), ask the user which package to focus on before exploring. Don't try to cover every package at once — it produces a shallow context.md.
 
 **Do not just detect file existence.** Actually read and understand the codebase. Use the explore reference guide (`references/explore-guide.md`) for detailed patterns.
 
@@ -336,22 +347,6 @@ Write freeform markdown. Start with a header and type indicator:
 [rest of content organized by the categories above]
 ```
 
-Each major section should end with a brief HTML comment noting the key files it was derived from. This enables targeted refresh — the agent can check if those specific files changed and update only the affected sections:
-
-```markdown
-## Tech Stack
-- **Language:** TypeScript 5.3
-- **Runtime:** Node.js 20
-...
-<!-- Based on: package.json, tsconfig.json -->
-
-## Data Layer
-Prisma with PostgreSQL. Key models: User, Product, Order...
-<!-- Based on: prisma/schema.prisma, prisma/migrations/ -->
-```
-
-These comments are invisible when rendered and cost almost nothing in file size. The agent uses them during staleness detection to map `git diff` output to specific sections.
-
 After writing, present a brief summary to the user and ask if anything is missing or wrong. For brownfield, double-check: are the **patterns and principles** written as actionable rules, not just observations? Is the **debt section** categorized and prioritized, not just a flat list?
 
 ---
@@ -360,7 +355,7 @@ After writing, present a brief summary to the user and ask if anything is missin
 
 **Goal:** Define **what** to build and **why**. Not how.
 
-**Prerequisite:** `.gspec/context.md` should exist. If not, run Phase 1 first or ask the user to describe the project context.
+**Prerequisite:** `.gspec/context.md` should exist. For brownfield, **strongly recommend running Phase 1 first** — specs written without codebase understanding tend to ignore existing patterns and constraints. If the user skips it, warn once and proceed. For greenfield, ask the user to describe the project context verbally.
 
 **Output:** `.gspec/spec.md` (or `.gspec/features/<name>/spec.md` for multi-feature projects)
 
@@ -562,7 +557,12 @@ The value of gspec is that these artifacts are a **persistent briefing document*
 4. No section is just a list of names — each has enough explanation to be actionable
 5. Debt is categorized (bugs, legacy, architectural, missing infrastructure) and severity-rated — not a flat bullet list
 6. Every debt item is verifiable — based on something you actually found, not speculation about what "should" exist
-7. Major sections have `<!-- Based on: ... -->` source comments for targeted refresh
+
+### Context (greenfield)
+1. Project intent is specific enough to build from — not just "a web app" but what it does, for whom, and why
+2. Constraints are concrete — "must run on AWS Lambda" not "should be scalable"
+3. Prior art section exists and names at least 2-3 existing solutions with what to learn from each
+4. Target users are identified — even if it's "me, on my own machines"
 
 ### Spec
 1. Every requirement has an index (R1, R2...) — no unnumbered requirements
