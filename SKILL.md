@@ -83,7 +83,8 @@ Use this for small features that don't need 3 separate files.
 1. Check if `.gspec/` exists
 2. Check which artifacts exist: `context.md`, `spec.md`, `plan.md`
 3. Check for feature subdirectories: `.gspec/features/*/`
-4. Report status to the user:
+4. **Check context.md freshness** (see staleness detection below)
+5. Report status to the user:
 
 ```
 📋 gspec status:
@@ -97,6 +98,49 @@ Suggested next step: gspec plan
 If the user asked for a specific phase, proceed with it. If they just said "gspec", suggest the next logical phase based on what exists.
 
 If artifacts already exist and the user re-runs a phase, ask whether they want to **update** the existing artifact or **start fresh**. For multi-feature projects, ask which feature they're working on unless it is already explicit in the command.
+
+### Staleness detection for context.md
+
+Every time you read `context.md` (on entry, before specify, before plan), check whether it's still current:
+
+1. **Read the `Date:` field** from the context.md header
+2. **Compare against recent git activity:**
+   ```bash
+   # How much has changed since context.md was last updated?
+   git log --oneline --since="YYYY-MM-DD" | wc -l
+   git diff --stat $(git log --until="YYYY-MM-DD" -1 --format=%H)..HEAD -- . ':!.gspec'
+   ```
+3. **Assess impact** — look at *what* changed, not just *how much*:
+   - Changes to the data model (schema files, migrations, ORM models) → Data Layer section is stale
+   - New or removed routes/handlers → Architecture and Key Directories sections are stale
+   - Dependency changes (package.json, go.mod, requirements.txt) → Tech Stack section is stale
+   - New test files or changed test patterns → Testing conventions may be stale
+   - The debt section goes stale fastest — new TODOs, resolved issues, and pattern changes accumulate silently
+
+4. **Report and offer targeted refresh** instead of a full re-explore:
+
+```
+⚠️ context.md may be stale (last updated 2025-03-12, 47 commits since):
+  - prisma/schema.prisma changed — Data Layer section may be outdated
+  - 2 new route files added in src/routes/ — Architecture section may be incomplete
+  - package.json gained 3 new dependencies — Tech Stack section may be outdated
+
+Options:
+  1. Targeted refresh — I'll re-read the changed files and update only the affected sections
+  2. Full re-explore — re-run gspec explore from scratch
+  3. Skip — proceed with current context.md as-is
+```
+
+**Targeted refresh flow:**
+- Re-read only the files that changed since the last explore date
+- Update only the affected sections of context.md, preserving sections that are still accurate
+- Update the `Date:` field to today
+- Present a diff summary of what changed in context.md so the user can verify
+
+**When to skip the staleness check:**
+- The user explicitly said `gspec explore` — they already want a fresh explore, no need to check
+- context.md was updated today — it's current
+- Fewer than 5 commits since the last update and none touch key structural files (schema, entry point, dependencies) — not worth flagging
 
 ### First-time setup: ask about git tracking
 
@@ -291,6 +335,22 @@ Write freeform markdown. Start with a header and type indicator:
 
 [rest of content organized by the categories above]
 ```
+
+Each major section should end with a brief HTML comment noting the key files it was derived from. This enables targeted refresh — the agent can check if those specific files changed and update only the affected sections:
+
+```markdown
+## Tech Stack
+- **Language:** TypeScript 5.3
+- **Runtime:** Node.js 20
+...
+<!-- Based on: package.json, tsconfig.json -->
+
+## Data Layer
+Prisma with PostgreSQL. Key models: User, Product, Order...
+<!-- Based on: prisma/schema.prisma, prisma/migrations/ -->
+```
+
+These comments are invisible when rendered and cost almost nothing in file size. The agent uses them during staleness detection to map `git diff` output to specific sections.
 
 After writing, present a brief summary to the user and ask if anything is missing or wrong. For brownfield, double-check: are the **patterns and principles** written as actionable rules, not just observations? Is the **debt section** categorized and prioritized, not just a flat list?
 
@@ -502,6 +562,7 @@ The value of gspec is that these artifacts are a **persistent briefing document*
 4. No section is just a list of names — each has enough explanation to be actionable
 5. Debt is categorized (bugs, legacy, architectural, missing infrastructure) and severity-rated — not a flat bullet list
 6. Every debt item is verifiable — based on something you actually found, not speculation about what "should" exist
+7. Major sections have `<!-- Based on: ... -->` source comments for targeted refresh
 
 ### Spec
 1. Every requirement has an index (R1, R2...) — no unnumbered requirements

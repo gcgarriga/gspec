@@ -36,6 +36,7 @@ users, and payments. ~15K lines of code across 120 files.
 - **Validation:** Zod schemas co-located with routes
 - **Testing:** Vitest + Supertest, ~78% coverage
 - **Build:** tsup for production, tsx for dev
+<!-- Based on: package.json, tsconfig.json -->
 
 ## Architecture
 Layered monolith following service pattern:
@@ -46,6 +47,7 @@ Request → Route Handler → Validation (Zod) → Service → Prisma → Postgr
 - `src/services/` — Business logic, one service per domain
 - `src/middleware/` — Auth, validation, error handling (custom AppError class with HTTP codes)
 - `src/utils/` — Shared helpers (pagination, date formatting, slug generation)
+<!-- Based on: src/index.ts, src/routes/, src/services/ -->
 
 ## Key directories and entry points
 - Entry: `src/index.ts` — registers middleware, mounts routes, starts server
@@ -56,6 +58,7 @@ Request → Route Handler → Validation (Zod) → Service → Prisma → Postgr
 Prisma with PostgreSQL. Key models: User, Product, Order, OrderItem, Payment.
 Relations: User → Orders → OrderItems → Products. Payment 1:1 with Order.
 Migrations in `prisma/migrations/`.
+<!-- Based on: prisma/schema.prisma, prisma/migrations/ -->
 
 ## How to build, test, and run
 - Dev: `npm run dev` (tsx watch mode)
@@ -63,6 +66,7 @@ Migrations in `prisma/migrations/`.
 - Build: `npm run build` (tsup)
 - Deploy: Docker → fly.io (Dockerfile in root)
 - CI: GitHub Actions (.github/workflows/ci.yml)
+<!-- Based on: package.json, Dockerfile, .github/workflows/ci.yml -->
 
 ## Patterns and Principles
 - Routes never access Prisma directly — business logic lives in services
