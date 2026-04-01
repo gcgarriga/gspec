@@ -23,7 +23,7 @@ gspec is a [Copilot CLI](https://docs.github.com/copilot/concepts/agents/about-c
 
 Inspired by [spec-kit](https://github.com/github/spec-kit) but stripped to the essentials: **no external CLI, no templates, no scripts, no dependencies.** Just a skill file that teaches your AI agent to understand the codebase, define requirements, and plan before writing code.
 
-gspec writes persistent artifacts to `.gspec/`, so future Copilot sessions can resume with context instead of starting from scratch. After that, Copilot's native **plan mode** takes over for implementation.
+gspec writes persistent project artifacts — auto-loaded instruction files (`AGENTS.md`, `.github/copilot-instructions.md`) plus `.gspec/` documents — so future Copilot sessions can resume with context instead of starting from scratch. After that, Copilot's native **plan mode** takes over for implementation.
 
 Works with **any tech stack**, **any project type**, **greenfield or brownfield**.
 
@@ -96,8 +96,8 @@ The first time `.gspec/` is created, gspec asks which artifacts to **track in gi
 > gspec quick — add a /health endpoint that returns service status
 ```
 
-Produces a single combined document instead of 3 separate files. Use for small features.
-The output is a single `.gspec/spec.md` with three sections: `Context`, `Requirements`, and `Approach`.
+Produces a single combined document instead of 3 separate files. Use for small features, especially on projects that have already been explored.
+The output is a single `.gspec/spec.md` with three sections: `Context`, `Requirements`, and `Approach`. If `.gspec/brief.md` already exists, gspec uses it to ground the `Context` section.
 gspec still checks the current `.gspec/` state first, and may ask whether to update or start fresh if a spec already exists.
 See `examples/quick.md` for a full example.
 
@@ -158,7 +158,7 @@ If you want to see the workflow before trying it:
 - [`examples/greenfield.md`](examples/greenfield.md) — starting a new CLI project from scratch
 - [`examples/brownfield.md`](examples/brownfield.md) — planning a wishlist feature in an existing API
 
-These examples show both the conversational prompts and the resulting `.gspec/` artifacts.
+These examples show both the conversational prompts and the resulting instruction files plus `.gspec/` artifacts.
 
 ---
 

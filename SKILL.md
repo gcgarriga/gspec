@@ -75,7 +75,7 @@ If no feature name is provided, use the root artifacts (`.gspec/spec.md`, `.gspe
 [How to build it — tech choices, key decisions]
 ```
 
-Use this for small features that don't need 3 separate files. If `brief.md` exists, read it for the Context section — and run the staleness check as usual, since `gspec quick` depends on accurate project context.
+Use this for small features that don't need 3 separate files. On brownfield projects, it works best after Phase 1 because the instruction files are already auto-loaded and `brief.md` can ground the Context section. If `brief.md` exists, read it for Context — and run the staleness check as usual, since `gspec quick` depends on accurate project context.
 
 `gspec quick` follows the same naming rules as other phases:
 - `gspec quick — add a health endpoint` → writes `.gspec/spec.md` (root)
@@ -258,7 +258,7 @@ Write `AGENTS.md` at the repo root and `.github/copilot-instructions.md`. These 
    - ✅ **Always:** things agents should do without asking (run tests, follow naming conventions)
    - ⚠️ **Ask first:** changes that need human approval (schema changes, new dependencies, config changes)
    - 🚫 **Never:** hard limits (commit secrets, modify vendor/, delete tests)
-4. **Canonical examples** — point to real files as templates for new code
+4. **Canonical examples** — point to real files as templates for new code when the codebase has them. For greenfield projects with no implementation yet, omit this section.
 
 Format for `AGENTS.md`:
 ```markdown
@@ -292,6 +292,8 @@ Follow these files as templates for new code:
 - **Service:** `src/services/product.ts`
 - **Test:** `src/__tests__/routes/products.test.ts`
 ```
+
+For greenfield projects with no implementation yet, omit the `Canonical Examples` section until there are real files to point at.
 
 For `.github/copilot-instructions.md`, use the same content but with Copilot-appropriate framing:
 ```markdown
@@ -414,10 +416,12 @@ Write structured markdown with clear sections:
 
 **Write as if briefing a new developer (or AI agent) who needs to understand the project for architectural decisions — not for routine coding (that's what the instruction files handle).**
 
+**Brownfield default format:**
+
 ```markdown
 # Project Brief
 
-**Type:** brownfield | greenfield
+**Type:** brownfield
 **Date:** YYYY-MM-DD
 
 ## What this is
@@ -444,9 +448,33 @@ Write structured markdown with clear sections:
 ## Technical Debt and Known Issues
 [Categorized and severity-rated — see Debt format]
 
-## Constraints (greenfield) / Prior Art & Inspiration (if applicable)
-[For greenfield: hard constraints — tech, compliance, team skills, integration points]
-[For projects with prior art: links and brief notes on existing solutions and what to learn from each]
+## Coding Rules
+See `AGENTS.md` and `.github/copilot-instructions.md` for coding conventions and boundaries.
+```
+
+**Greenfield default format:**
+
+```markdown
+# Project Brief
+
+**Type:** greenfield
+**Date:** YYYY-MM-DD
+
+## Project Intent
+[2-3 sentences on what this is, who it serves, and why it should exist]
+
+## Domain
+[Problem space and what makes it tricky]
+
+## Prior Art & Inspiration
+- **[Project/tool]** — [what to learn from it]
+- **[Project/tool]** — [what to borrow or avoid]
+
+## Target Users
+[Who this is for]
+
+## Key Constraints
+[Hard constraints — tech, compliance, team skills, integration points]
 
 ## Coding Rules
 See `AGENTS.md` and `.github/copilot-instructions.md` for coding conventions and boundaries.
@@ -672,7 +700,7 @@ The value of gspec is that these artifacts are a **persistent briefing document*
 1. Rules are written as imperatives ("Do X"), not observations ("X is used")
 2. Commands are exact and complete — a new session can build/test from these alone
 3. Boundaries use three-tier format (✅ Always, ⚠️ Ask first, 🚫 Never)
-4. Canonical examples point to real files that exist in the codebase
+4. Canonical examples point to real files that exist in the codebase, or the section is omitted for greenfield projects with no implementation yet
 5. Total length is under 500 words — tight enough to not pollute context
 6. AGENTS.md and copilot-instructions.md are in sync
 

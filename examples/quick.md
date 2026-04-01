@@ -10,7 +10,8 @@ A compact example of using `gspec quick` for a small feature where a full 3-phas
 
 ```text
 📋 gspec status:
-No existing .gspec/spec.md found. Quick path is clear.
+No existing .gspec/spec.md found.
+.gspec/brief.md exists — using it for Context.
 ```
 
 ✅ Wrote `.gspec/spec.md`
@@ -37,9 +38,9 @@ No existing .gspec/spec.md found. Quick path is clear.
 - Keep the implementation simple and avoid introducing new abstractions
 ```
 
-Now switch to Copilot plan mode and use the artifact as context:
+The project rules are already auto-loaded from `AGENTS.md` and `.github/copilot-instructions.md`, so now switch to Copilot plan mode and use the quick spec as the extra context:
 
 ```text
 @.gspec/spec.md
-Implement this change following the existing project patterns.
+Implement this change following the existing project patterns already loaded for this repo.
 ```
