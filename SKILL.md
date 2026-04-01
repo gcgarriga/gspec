@@ -24,7 +24,7 @@ Phase 3: Plan      →  .gspec/plan.md                        (decide how to bui
 → Hand off to Copilot's plan mode for tasks and implementation
 ```
 
-Each phase builds on the previous. Artifacts are stored in `.gspec/` at the project root and **persist across sessions** — any future Copilot session can read them.
+Each phase builds on the previous. Instruction files (`AGENTS.md`, `.github/copilot-instructions.md`) live in standard locations for auto-loading. Spec and plan artifacts are stored in `.gspec/` at the project root. All outputs **persist across sessions** — any future Copilot session can read them.
 
 For projects with multiple features, use `.gspec/features/<feature-name>/` for per-feature artifacts (spec.md, plan.md), while `brief.md` stays at the `.gspec/` root since it describes the whole project.
 
@@ -444,6 +444,10 @@ Write structured markdown with clear sections:
 ## Technical Debt and Known Issues
 [Categorized and severity-rated — see Debt format]
 
+## Constraints (greenfield) / Prior Art & Inspiration (if applicable)
+[For greenfield: hard constraints — tech, compliance, team skills, integration points]
+[For projects with prior art: links and brief notes on existing solutions and what to learn from each]
+
 ## Coding Rules
 See `AGENTS.md` and `.github/copilot-instructions.md` for coding conventions and boundaries.
 ```
@@ -653,8 +657,7 @@ The value of gspec is that these artifacts are a **persistent briefing document*
 
 ### Brief (brownfield)
 1. Architecture describes actual flow, not just folder names
-2. Build/test/run commands match what's in AGENTS.md
-3. No section is just a list of names — each has enough explanation to be actionable
+2. No section is just a list of names — each has enough explanation to be actionable
 4. Debt is categorized and severity-rated — not a flat bullet list
 5. Every debt item is verifiable — based on something found, not speculation
 6. Rules are NOT duplicated in brief.md — they reference instruction files
