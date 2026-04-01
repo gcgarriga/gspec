@@ -17,7 +17,7 @@ A lightweight workflow for going from codebase or idea to a clear implementation
 ## Core Workflow
 
 ```
-Phase 1: Explore   →  AGENTS.md + copilot-instructions.md  (auto-loaded rules)
+Phase 1: Explore   →  AGENTS.md + .github/copilot-instructions.md  (auto-loaded rules)
                    →  .gspec/brief.md                       (project knowledge, attach with @)
 Phase 2: Specify   →  .gspec/spec.md                        (define what to build)
 Phase 3: Plan      →  .gspec/plan.md                        (decide how to build it)
@@ -160,7 +160,7 @@ When creating the `.gspec/` directory for the first time (i.e., it does not alre
 
 > Which artifacts should be tracked in git?
 >
-> - **`AGENTS.md`** — auto-loaded by AI agents. **Recommended** to track on the default branch.
+> - **`AGENTS.md`** — project instructions for AI agents. **Recommended** to track on the default branch.
 > - **`.github/copilot-instructions.md`** — auto-loaded by Copilot. **Recommended** to track on the default branch.
 > - **`.gspec/brief.md`** — deep project reference. Recommended to track on the default branch.
 > - **`spec.md` / `plan.md`** — can be project-wide or feature-specific. Track them if you want specs visible in PRs.
@@ -176,7 +176,12 @@ Configure `.gitignore` based on the user's choices. Examples:
   .gspec/*
   !.gspec/brief.md
   ```
-- **Track nothing from .gspec/** — add `.gspec/` to `.gitignore` (but `AGENTS.md` and `.github/copilot-instructions.md` are outside `.gspec/` so they're tracked regardless).
+- **Track nothing from .gspec/** — add `.gspec/` to `.gitignore`.
+- **Keep instruction files local-only** — add either path explicitly if you do not want to track it:
+  ```
+  AGENTS.md
+  .github/copilot-instructions.md
+  ```
 
 Only ask once — if `.gspec/` already exists and tracking is already configured, skip this question. However, if `.gitignore` contains a coarse `.gspec/` rule (ignoring everything) and the user re-runs gspec, offer to replace it with a granular configuration (e.g., tracking only `brief.md`).
 
@@ -367,15 +372,15 @@ After writing all three files, present a summary:
 ```
 ✅ gspec explore complete:
 
-Instruction files (auto-loaded by AI agents):
+Instruction files (auto-loaded in Copilot):
   📄 AGENTS.md — [N] rules, [N] boundaries
   📄 .github/copilot-instructions.md — synced with AGENTS.md
 
 Project reference (attach with @.gspec/brief.md):
   📄 .gspec/brief.md — architecture, data model, [N] debt items
 
-These instruction files are loaded automatically in every Copilot, Claude Code,
-and Codex session. No @ mention needed — your agents are already smarter.
+In Copilot, these instruction files are loaded automatically. For other agents,
+attach or adapt them as needed. No @ mention needed for Copilot sessions.
 ```
 
 Ask if anything is missing or incorrect. For brownfield, double-check: are the rules written as imperatives? Are boundaries using the three-tier format? Is the debt section categorized and severity-rated?

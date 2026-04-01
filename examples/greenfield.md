@@ -246,7 +246,7 @@ dotm (binary)
 
 - `AGENTS.md` — coding conventions and boundaries (auto-loaded by Copilot)
 - `.github/copilot-instructions.md` — same rules in Copilot format (auto-loaded)
-- `.gspec/brief.md` — project intent and constraints
+- `.gspec/brief.md` — project intent, prior art, and constraints
 - `.gspec/spec.md` — requirements and scope
 - `.gspec/plan.md` — technical approach
 

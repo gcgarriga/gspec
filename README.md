@@ -34,7 +34,7 @@ Works with **any tech stack**, **any project type**, **greenfield or brownfield*
 | What gspec adds | Why it matters |
 |---|---|
 | **Auto-loaded rules + clean handoff** | Explore generates `AGENTS.md` + `.github/copilot-instructions.md` — Copilot loads them automatically in every session. Then you can attach `@.gspec/brief.md`, `@.gspec/spec.md`, or `@.gspec/plan.md` only when deeper context is needed. |
-| **Deep project reference** | `.gspec/brief.md` captures architecture, patterns, and technical debt as a cold-reader briefing — attach with `@` when a session needs deeper context. |
+| **Deep project reference** | `.gspec/brief.md` captures project understanding — architecture and debt for brownfield, intent and constraints for greenfield — as a cold-reader briefing you can attach with `@` when a session needs more context. |
 | **Brownfield understanding first** | Explore captures architecture, patterns, strengths, and **categorized technical debt** (bugs, legacy patterns, architectural concerns rated by severity) before implementation starts. |
 | **Better requirement shaping** | Specify challenges vague asks, separates *what* from *how*, and indexes requirements (R1, R2…) for traceability across plan and test scenarios. |
 | **Lightweight planning** | Plan asks for your design ideas first, pushes back on flaws, then recommends concrete approaches — without replacing Copilot's native task workflow. |
@@ -85,7 +85,7 @@ For named features, spec and plan artifacts can also live under `.gspec/features
 
 Then hand off to Copilot's native **planning/task workflow** in plan mode. The `.gspec/` artifacts persist across sessions — reference them anytime with `@.gspec/brief.md`. The instruction files (`AGENTS.md` and `.github/copilot-instructions.md`) are auto-loaded by Copilot without needing `@` mentions.
 
-The first time `.gspec/` is created, gspec asks which artifacts to **track in git** — `AGENTS.md` and `.github/copilot-instructions.md` (recommended), `.gspec/brief.md`, `spec.md`/`plan.md`, and feature directories can each be tracked or ignored independently.
+The first time `.gspec/` is created, gspec asks which artifacts to **track in git**. `.gspec/brief.md`, `spec.md`/`plan.md`, and feature directories can be tracked or ignored independently. `AGENTS.md` and `.github/copilot-instructions.md` are recommended to stay tracked on the default branch.
 
 ---
 
