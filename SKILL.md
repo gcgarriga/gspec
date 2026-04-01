@@ -17,14 +17,15 @@ A lightweight workflow for going from codebase or idea to a clear implementation
 ## Core Workflow
 
 ```
-Phase 1: Explore   →  AGENTS.md + .github/copilot-instructions.md  (auto-loaded rules)
+Phase 1: Explore   →  .github/copilot-instructions.md       (required, auto-loaded by Copilot)
+                   →  AGENTS.md                             (optional, for cross-agent compatibility)
                    →  .gspec/brief.md                       (project knowledge, attach with @)
 Phase 2: Specify   →  .gspec/spec.md                        (define what to build)
 Phase 3: Plan      →  .gspec/plan.md                        (decide how to build it)
 → Hand off to Copilot's plan mode for tasks and implementation
 ```
 
-Each phase builds on the previous. Instruction files (`AGENTS.md`, `.github/copilot-instructions.md`) live in standard locations for auto-loading. Spec and plan artifacts are stored in `.gspec/` at the project root. All outputs **persist across sessions** — any future Copilot session can read them.
+Each phase builds on the previous. `.github/copilot-instructions.md` is the required default instruction file — it lives in a standard location and is auto-loaded by Copilot without any `@` mention. `AGENTS.md` is optional and only needed for repos that also use other agent tools (e.g., Claude, Gemini CLI) that look for it. Spec and plan artifacts are stored in `.gspec/` at the project root. All outputs **persist across sessions** — any future Copilot session can read them.
 
 For projects with multiple features, use `.gspec/features/<feature-name>/` for per-feature artifacts (spec.md, plan.md), while `brief.md` stays at the `.gspec/` root since it describes the whole project.
 
@@ -89,7 +90,7 @@ If a `spec.md` already exists at the target path, apply the same "update or star
 
 **Before running any phase**, check the `.gspec/` directory to understand current state:
 
-1. Check if `.gspec/` exists and check for `AGENTS.md` (repo root) and `.github/copilot-instructions.md`
+1. Check if `.gspec/` exists and check for `.github/copilot-instructions.md` (required) and `AGENTS.md` (optional)
 2. Check which artifacts exist: `brief.md`, `spec.md`, `plan.md`
 3. Check for feature subdirectories: `.gspec/features/*/`
 4. **Check brief.md freshness** (see staleness detection below)
@@ -98,8 +99,8 @@ If a `spec.md` already exists at the target path, apply the same "update or star
 ```
 📋 gspec status:
 ✅ brief.md — last updated [date]
-✅ AGENTS.md — synced with brief.md
-✅ copilot-instructions.md — synced with AGENTS.md
+✅ copilot-instructions.md — present
+✅ AGENTS.md — present (optional, cross-agent mirror)
 ✅ spec.md — [feature name from header]
 ⬜ plan.md — not yet created
 
@@ -147,7 +148,7 @@ Options:
 - Update only the affected sections of brief.md, preserving sections that are still accurate
 - Update the `Date:` field to today
 - Present a diff summary of what changed in brief.md so the user can verify
-- If the Rules were updated during a targeted refresh, also update `AGENTS.md` and `.github/copilot-instructions.md` to stay in sync
+- If the Rules were updated during a targeted refresh, also update `.github/copilot-instructions.md` (and `AGENTS.md` if present) to stay in sync
 
 **When to skip the staleness check:**
 - The user explicitly said `gspec explore` — they already want a fresh explore, no need to check
@@ -160,8 +161,8 @@ When creating the `.gspec/` directory for the first time (i.e., it does not alre
 
 > Which artifacts should be tracked in git?
 >
-> - **`AGENTS.md`** — project instructions for AI agents. **Recommended** to track on the default branch.
 > - **`.github/copilot-instructions.md`** — auto-loaded by Copilot. **Recommended** to track on the default branch.
+> - **`AGENTS.md`** — optional cross-agent mirror. Track if the repo is also used with other agent tools.
 > - **`.gspec/brief.md`** — deep project reference. Recommended to track on the default branch.
 > - **`spec.md` / `plan.md`** — can be project-wide or feature-specific. Track them if you want specs visible in PRs.
 > - **Feature directories** (`.gspec/features/`) — feature-specific specs and plans.
@@ -191,7 +192,7 @@ Only ask once — if `.gspec/` already exists and tracking is already configured
 
 **Goal:** Build a deep, shared understanding of the project — and set up the codebase for AI agents.
 
-**Primary output:** `AGENTS.md` (repo root) + `.github/copilot-instructions.md` — auto-loaded instruction files that make every AI session better immediately.
+**Primary output:** `.github/copilot-instructions.md` — the required default instruction file, auto-loaded by Copilot in every session. Also generates `AGENTS.md` (optional) for repos that use other agent tools (Claude, Gemini CLI, etc.).
 
 **Always generated:** `.gspec/brief.md` — deep project reference for spec/plan phases. Attach with `@.gspec/brief.md` when the agent needs architectural understanding.
 
@@ -253,9 +254,9 @@ Write these as **rules to follow**, not observations. Example: "All routes valid
 
 After exploring, produce three files from the same exploration:
 
-**A. Instruction files (primary — auto-loaded by agents)**
+**A. Instruction files**
 
-Write `AGENTS.md` at the repo root and `.github/copilot-instructions.md`. These contain the prescriptive rules from Step 3 — the stuff agents need in every session. Keep both files tight (<500 words). They should cover:
+Write `.github/copilot-instructions.md` (required) and optionally `AGENTS.md` for cross-agent compatibility. These contain the prescriptive rules from Step 3 — the stuff agents need in every session. Keep both files tight (<500 words). They should cover:
 
 1. **Commands** — how to build, test, lint, run
 2. **Rules** — the prescriptive coding patterns from Step 3 (error handling, naming, architecture patterns, testing conventions)
@@ -265,9 +266,9 @@ Write `AGENTS.md` at the repo root and `.github/copilot-instructions.md`. These 
    - 🚫 **Never:** hard limits (commit secrets, modify vendor/, delete tests)
 4. **Canonical examples** — point to real files as templates for new code when the codebase has them. For greenfield projects with no implementation yet, omit this section.
 
-Format for `AGENTS.md`:
+Format for `.github/copilot-instructions.md` (primary, required):
 ```markdown
-# AGENTS.md
+# Copilot Instructions
 
 <!-- Generated by gspec explore — edit freely, this is your file -->
 
@@ -300,23 +301,23 @@ Follow these files as templates for new code:
 
 For greenfield projects with no implementation yet, omit the `Canonical Examples` section until there are real files to point at.
 
-For `.github/copilot-instructions.md`, use the same content but with Copilot-appropriate framing:
+For `AGENTS.md` (optional, cross-agent compatibility), use the same content but headed `# AGENTS.md`:
 ```markdown
-# Copilot Instructions
+# AGENTS.md
 
 <!-- Generated by gspec explore — edit freely, this is your file -->
 
-## Coding Conventions
+## Commands
 
-[Same rules as AGENTS.md]
+[Same commands as copilot-instructions.md]
 
-## Testing Conventions
+## Rules
 
-[Same testing rules as AGENTS.md]
+[Same rules as copilot-instructions.md]
 
 ## Boundaries
 
-[Same boundaries as AGENTS.md]
+[Same boundaries as copilot-instructions.md]
 ```
 
 If either file already exists, show the user the diff and ask before updating.
@@ -331,7 +332,7 @@ Write `.gspec/brief.md`. This is the deep project reference — architecture, da
 4. **Data layer** — database, ORM, key models and relationships
 5. **Strengths** — what's well-designed, patterns worth preserving
 6. **Technical debt and known issues** — structured assessment (see Debt format below)
-7. **Coding rules reference** — a single line: "See `AGENTS.md` and `.github/copilot-instructions.md` for coding conventions and boundaries."
+7. **Coding rules reference** — a single line: "See `.github/copilot-instructions.md` for coding conventions and boundaries."
 
 ##### Debt and Issues Format
 
@@ -373,14 +374,13 @@ After writing all three files, present a summary:
 ✅ gspec explore complete:
 
 Instruction files (auto-loaded in Copilot):
-  📄 AGENTS.md — [N] rules, [N] boundaries
-  📄 .github/copilot-instructions.md — synced with AGENTS.md
+  📄 .github/copilot-instructions.md — [N] rules, [N] boundaries
+  📄 AGENTS.md — optional cross-agent mirror (generated if applicable)
 
 Project reference (attach with @.gspec/brief.md):
   📄 .gspec/brief.md — architecture, data model, [N] debt items
 
-In Copilot, these instruction files are loaded automatically. For other agents,
-attach or adapt them as needed. No @ mention needed for Copilot sessions.
+.github/copilot-instructions.md is loaded automatically in every Copilot session.
 ```
 
 Ask if anything is missing or incorrect. For brownfield, double-check: are the rules written as imperatives? Are boundaries using the three-tier format? Is the debt section categorized and severity-rated?
@@ -454,7 +454,7 @@ Write structured markdown with clear sections:
 [Categorized and severity-rated — see Debt format]
 
 ## Coding Rules
-See `AGENTS.md` and `.github/copilot-instructions.md` for coding conventions and boundaries.
+See `.github/copilot-instructions.md` for coding conventions and boundaries.
 ```
 
 **Greenfield default format:**
@@ -482,7 +482,7 @@ See `AGENTS.md` and `.github/copilot-instructions.md` for coding conventions and
 [Hard constraints — tech, compliance, team skills, integration points]
 
 ## Coding Rules
-See `AGENTS.md` and `.github/copilot-instructions.md` for coding conventions and boundaries.
+See `.github/copilot-instructions.md` for coding conventions and boundaries.
 ```
 
 After writing, present a brief summary to the user and ask if anything is missing or wrong. For brownfield, double-check: are the **patterns and principles** written as actionable rules, not just observations? Is the **debt section** categorized and prioritized, not just a flat list?
@@ -701,13 +701,13 @@ The value of gspec is that these artifacts are a **persistent briefing document*
 3. Prior art section exists and names at least 2-3 existing solutions with what to learn from each
 4. Target users are identified — even if it's "me, on my own machines"
 
-### Instruction files (AGENTS.md / copilot-instructions.md)
+### Instruction files (copilot-instructions.md / AGENTS.md)
 1. Rules are written as imperatives ("Do X"), not observations ("X is used")
 2. Commands are exact and complete — a new session can build/test from these alone
 3. Boundaries use three-tier format (✅ Always, ⚠️ Ask first, 🚫 Never)
 4. Canonical examples point to real files that exist in the codebase, or the section is omitted for greenfield projects with no implementation yet
 5. Total length is under 500 words — tight enough to not pollute context
-6. AGENTS.md and copilot-instructions.md are in sync
+6. If `AGENTS.md` is present, it is in sync with `copilot-instructions.md`
 
 ### Spec
 1. Every requirement has an index (R1, R2...) — no unnumbered requirements
@@ -736,7 +736,7 @@ The value of gspec is that these artifacts are a **persistent briefing document*
 ## General Rules
 
 1. **Check `.gspec/` status on entry** — report what exists, suggest next step
-2. **On first `.gspec/` creation** — ask which artifacts to track in git (see "First-time setup" above). Recommend tracking `AGENTS.md`, `copilot-instructions.md`, and `brief.md` on the default branch.
+2. **On first `.gspec/` creation** — ask which artifacts to track in git (see "First-time setup" above). Recommend tracking `copilot-instructions.md` and `brief.md` on the default branch. Track `AGENTS.md` too if the repo is used with other agent tools.
 3. **Read existing artifacts** before writing new ones — phases build on each other
 4. **Be challenging** — probe for gaps, don't just accept requirements at face value
 5. **Keep artifacts concise** — no boilerplate. Every line should earn its place.

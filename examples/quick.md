@@ -38,7 +38,7 @@ No existing .gspec/spec.md found.
 - Keep the implementation simple and avoid introducing new abstractions
 ```
 
-The project rules are already auto-loaded from `AGENTS.md` and `.github/copilot-instructions.md`, so now switch to Copilot plan mode and use the quick spec as the extra context:
+The project rules are already auto-loaded from `.github/copilot-instructions.md`, so now switch to Copilot plan mode and use the quick spec as the extra context:
 
 ```text
 @.gspec/spec.md
