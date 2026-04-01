@@ -17,17 +17,18 @@ A lightweight workflow for going from codebase or idea to a clear implementation
 ## Core Workflow
 
 ```
-Phase 1: Explore   →  .gspec/context.md    (understand where you are)
-Phase 2: Specify   →  .gspec/spec.md       (define what to build)
-Phase 3: Plan      →  .gspec/plan.md       (decide how to build it)
+Phase 1: Explore   →  AGENTS.md + copilot-instructions.md  (auto-loaded rules)
+                   →  .gspec/brief.md                       (project knowledge, attach with @)
+Phase 2: Specify   →  .gspec/spec.md                        (define what to build)
+Phase 3: Plan      →  .gspec/plan.md                        (decide how to build it)
 → Hand off to Copilot's plan mode for tasks and implementation
 ```
 
 Each phase builds on the previous. Artifacts are stored in `.gspec/` at the project root and **persist across sessions** — any future Copilot session can read them.
 
-For projects with multiple features, use `.gspec/features/<feature-name>/` for per-feature artifacts (spec.md, plan.md), while `context.md` stays at the `.gspec/` root since it describes the whole project.
+For projects with multiple features, use `.gspec/features/<feature-name>/` for per-feature artifacts (spec.md, plan.md), while `brief.md` stays at the `.gspec/` root since it describes the whole project.
 
-**Context persistence:** `context.md` is project-wide — it describes the codebase, not a feature. Maintain it on the default branch (`main`/`master`) so new branches start with the current version. Existing feature branches need an explicit merge or rebase to pick up later updates. Feature-specific files (`spec.md`, `plan.md`) naturally live on their feature branches.
+**Brief persistence:** `brief.md` is project-wide — it describes the codebase, not a feature. Maintain it on the default branch (`main`/`master`) so new branches start with the current version. Existing feature branches need an explicit merge or rebase to pick up later updates. Feature-specific files (`spec.md`, `plan.md`) naturally live on their feature branches.
 
 ## Design Philosophy
 
@@ -37,7 +38,7 @@ These principles govern how gspec thinks — and how it guides future implementa
 2. **Right-size everything** — A 50-line script doesn't need an architecture diagram. A distributed system does. Scale the depth of each phase to the project's actual complexity.
 3. **Fewer moving parts** — Prefer stdlib over libraries. Prefer one library over three. Every dependency is a liability.
 4. **Match the codebase** — For brownfield: match existing patterns exactly. Don't introduce new paradigms. For greenfield: establish patterns early and follow them consistently.
-5. **Artifacts should be useful, not thorough** — Every line in context.md, spec.md, and plan.md should earn its place. If it doesn't help someone build the right thing, cut it.
+5. **Artifacts should be useful, not thorough** — Every line in brief.md, spec.md, and plan.md should earn its place. If it doesn't help someone build the right thing, cut it.
 
 ## How to Drive the Workflow
 
@@ -74,7 +75,7 @@ If no feature name is provided, use the root artifacts (`.gspec/spec.md`, `.gspe
 [How to build it — tech choices, key decisions]
 ```
 
-Use this for small features that don't need 3 separate files. If `context.md` exists, read it for the Context section — and run the staleness check as usual, since `gspec quick` depends on accurate project context.
+Use this for small features that don't need 3 separate files. If `brief.md` exists, read it for the Context section — and run the staleness check as usual, since `gspec quick` depends on accurate project context.
 
 `gspec quick` follows the same naming rules as other phases:
 - `gspec quick — add a health endpoint` → writes `.gspec/spec.md` (root)
@@ -89,14 +90,16 @@ If a `spec.md` already exists at the target path, apply the same "update or star
 **Before running any phase**, check the `.gspec/` directory to understand current state:
 
 1. Check if `.gspec/` exists
-2. Check which artifacts exist: `context.md`, `spec.md`, `plan.md`
+2. Check which artifacts exist: `brief.md`, `spec.md`, `plan.md`, `AGENTS.md`, `copilot-instructions.md`
 3. Check for feature subdirectories: `.gspec/features/*/`
-4. **Check context.md freshness** (see staleness detection below)
+4. **Check brief.md freshness** (see staleness detection below)
 5. Report status to the user:
 
 ```
 📋 gspec status:
-✅ context.md — last updated [date]
+✅ brief.md — last updated [date]
+✅ AGENTS.md — synced with brief.md
+✅ copilot-instructions.md — synced with AGENTS.md
 ✅ spec.md — [feature name from header]
 ⬜ plan.md — not yet created
 
@@ -107,14 +110,14 @@ If the user asked for a specific phase, proceed with it. If they just said "gspe
 
 If artifacts already exist and the user re-runs a phase, ask whether they want to **update** the existing artifact or **start fresh**. For multi-feature projects, ask which feature they're working on unless it is already explicit in the command.
 
-### Staleness detection for context.md
+### Staleness detection for brief.md
 
-Every time you read `context.md` (on entry, before specify, before plan), check whether it's still current:
+Every time you read `brief.md` (on entry, before specify, before plan), check whether it's still current:
 
-1. **Read the `Date:` field** from the context.md header
+1. **Read the `Date:` field** from the brief.md header
 2. **Compare against recent git activity** (skip this step if the project is not a git repo — fall back to comparing the `Date:` field against today's date and warn if it's more than 2 weeks old):
    ```bash
-   # What changed since context.md was last updated?
+   # What changed since brief.md was last updated?
    git log --oneline --since="YYYY-MM-DD" -- . ':!.gspec' | wc -l
    git log --stat --since="YYYY-MM-DD" -- . ':!.gspec' | head -60
    ```
@@ -128,7 +131,7 @@ Every time you read `context.md` (on entry, before specify, before plan), check 
 4. **Report and offer targeted refresh** instead of a full re-explore:
 
 ```
-⚠️ context.md may be stale (last updated 2025-03-12, 47 commits since):
+⚠️ brief.md may be stale (last updated 2025-03-12, 47 commits since):
   - prisma/schema.prisma changed — Data Layer section may be outdated
   - 2 new route files added in src/routes/ — Architecture section may be incomplete
   - package.json gained 3 new dependencies — Tech Stack section may be outdated
@@ -136,54 +139,58 @@ Every time you read `context.md` (on entry, before specify, before plan), check 
 Options:
   1. Targeted refresh — I'll re-read the changed files and update only the affected sections
   2. Full re-explore — re-run gspec explore from scratch
-  3. Skip — proceed with current context.md as-is
+  3. Skip — proceed with current brief.md as-is
 ```
 
 **Targeted refresh flow:**
 - Re-read only the files that changed since the last explore date
-- Update only the affected sections of context.md, preserving sections that are still accurate
+- Update only the affected sections of brief.md, preserving sections that are still accurate
 - Update the `Date:` field to today
-- Present a diff summary of what changed in context.md so the user can verify
-- If the Patterns and Principles section was updated and `.github/copilot-instructions.md` exists, remind the user that `copilot-instructions.md` may also need updating to stay in sync
+- Present a diff summary of what changed in brief.md so the user can verify
+- If the Rules were updated during a targeted refresh, also update `AGENTS.md` and `.github/copilot-instructions.md` to stay in sync
 
 **When to skip the staleness check:**
 - The user explicitly said `gspec explore` — they already want a fresh explore, no need to check
-- context.md was updated today — it's current
+- brief.md was updated today — it's current
 - Fewer than 5 commits since the last update and none touch key structural files (schema, entry point, dependencies) — not worth flagging
 
 ### First-time setup: ask about git tracking
 
 When creating the `.gspec/` directory for the first time (i.e., it does not already exist), ask the user which artifacts to track in git:
 
-> Which `.gspec/` artifacts should be tracked in git?
+> Which artifacts should be tracked in git?
 >
-> - **`context.md`** — describes the whole project. Recommended to track on the default branch so every branch inherits it.
-> - **`spec.md` / `plan.md`** — can be project-wide or feature-specific. Track them if you want specs visible in PRs and shared with teammates.
-> - **Feature directories** (`.gspec/features/`) — feature-specific specs and plans. Track them if you want feature artifacts visible in PRs.
+> - **`AGENTS.md`** — auto-loaded by AI agents. **Recommended** to track on the default branch.
+> - **`.github/copilot-instructions.md`** — auto-loaded by Copilot. **Recommended** to track on the default branch.
+> - **`.gspec/brief.md`** — deep project reference. Recommended to track on the default branch.
+> - **`spec.md` / `plan.md`** — can be project-wide or feature-specific. Track them if you want specs visible in PRs.
+> - **Feature directories** (`.gspec/features/`) — feature-specific specs and plans.
 >
 > Note: gspec will not run `git add` or `git commit` for you.
 
 Configure `.gitignore` based on the user's choices. Examples:
 
 - **Track everything** — do nothing; `.gspec/` remains unignored.
-- **Track only `context.md`** — add to `.gitignore` (order matters — the exception must come after the wildcard):
+- **Track only `brief.md`** — add to `.gitignore` (order matters — the exception must come after the wildcard):
   ```
   .gspec/*
-  !.gspec/context.md
+  !.gspec/brief.md
   ```
-- **Track nothing** — add `.gspec/` to `.gitignore`.
+- **Track nothing from .gspec/** — add `.gspec/` to `.gitignore` (but `AGENTS.md` and `.github/copilot-instructions.md` are outside `.gspec/` so they're tracked regardless).
 
-Only ask once — if `.gspec/` already exists and tracking is already configured, skip this question. However, if `.gitignore` contains a coarse `.gspec/` rule (ignoring everything) and the user re-runs gspec, offer to replace it with a granular configuration (e.g., tracking only `context.md`).
+Only ask once — if `.gspec/` already exists and tracking is already configured, skip this question. However, if `.gitignore` contains a coarse `.gspec/` rule (ignoring everything) and the user re-runs gspec, offer to replace it with a granular configuration (e.g., tracking only `brief.md`).
 
 ---
 
 ## Phase 1: Explore
 
-**Goal:** Build a deep, shared understanding of the project context.
+**Goal:** Build a deep, shared understanding of the project — and set up the codebase for AI agents.
 
-**Output:** `.gspec/context.md`
+**Primary output:** `AGENTS.md` (repo root) + `.github/copilot-instructions.md` — auto-loaded instruction files that make every AI session better immediately.
 
-**Branch guidance:** `context.md` is project-wide — it should be committed to the default branch (`main`/`master`) so every feature branch inherits it. When updating `context.md` from a feature branch, remind the user to merge or cherry-pick the update back to the default branch.
+**Always generated:** `.gspec/brief.md` — deep project reference for spec/plan phases. Attach with `@.gspec/brief.md` when the agent needs architectural understanding.
+
+**Branch guidance:** Instruction files and `brief.md` are project-wide — they should be committed to the default branch (`main`/`master`) so every feature branch inherits them.
 
 ### Brownfield (existing codebase detected)
 
@@ -192,7 +199,7 @@ Detection heuristic:
 - If directory has significant source files (>5 non-config files) → brownfield
 - Otherwise → greenfield
 
-**Monorepo detection:** If you find `turbo.json`, `nx.json`, `lerna.json`, `pnpm-workspace.yaml`, or multiple independent dependency files in subdirectories (`packages/`, `apps/`, `services/`), ask the user which package to focus on before exploring. Don't try to cover every package at once — it produces a shallow context.md.
+**Monorepo detection:** If you find `turbo.json`, `nx.json`, `lerna.json`, `pnpm-workspace.yaml`, or multiple independent dependency files in subdirectories (`packages/`, `apps/`, `services/`), ask the user which package to focus on before exploring. Don't try to cover every package at once — it produces a shallow brief.md.
 
 **Do not just detect file existence.** Actually read and understand the codebase. Use the explore reference guide (`references/explore-guide.md`) for detailed patterns.
 
@@ -237,18 +244,87 @@ Analyze how the codebase works so new code can match it exactly. Cover these in 
 
 Write these as **rules to follow**, not observations. Example: "All routes validate input with Zod schemas before calling services" — not "Zod is used for validation."
 
-#### Step 4: Produce the summary
-Cover these in `.gspec/context.md`:
+#### Step 4: Produce the outputs
+
+After exploring, produce three files from the same exploration:
+
+**A. Instruction files (primary — auto-loaded by agents)**
+
+Write `AGENTS.md` at the repo root and `.github/copilot-instructions.md`. These contain the prescriptive rules from Step 3 — the stuff agents need in every session. Keep both files tight (<500 words). They should cover:
+
+1. **Commands** — how to build, test, lint, run
+2. **Rules** — the prescriptive coding patterns from Step 3 (error handling, naming, architecture patterns, testing conventions)
+3. **Boundaries** — what agents must not touch, using three tiers:
+   - ✅ **Always:** things agents should do without asking (run tests, follow naming conventions)
+   - ⚠️ **Ask first:** changes that need human approval (schema changes, new dependencies, config changes)
+   - 🚫 **Never:** hard limits (commit secrets, modify vendor/, delete tests)
+4. **Canonical examples** — point to real files as templates for new code
+
+Format for `AGENTS.md`:
+```markdown
+# AGENTS.md
+
+<!-- Generated by gspec explore — edit freely, this is your file -->
+
+## Commands
+
+| Task    | Command          |
+|---------|------------------|
+| Dev     | `npm run dev`    |
+| Test    | `npm test`       |
+| Build   | `npm run build`  |
+| Lint    | `npm run lint`   |
+
+## Rules
+
+[Extract the prescriptive rules from Step 3 — written as imperatives]
+
+## Boundaries
+
+- ✅ **Always:** Run tests before committing. Follow naming conventions. Use the service layer for business logic.
+- ⚠️ **Ask first:** Adding new dependencies. Changing database schema. Modifying CI config.
+- 🚫 **Never:** Commit secrets or .env files. Modify files in vendor/. Remove failing tests.
+
+## Canonical Examples
+
+Follow these files as templates for new code:
+- **Route handler:** `src/routes/products.ts`
+- **Service:** `src/services/product.ts`
+- **Test:** `src/__tests__/routes/products.test.ts`
+```
+
+For `.github/copilot-instructions.md`, use the same content but with Copilot-appropriate framing:
+```markdown
+# Copilot Instructions
+
+<!-- Generated by gspec explore — edit freely, this is your file -->
+
+## Coding Conventions
+
+[Same rules as AGENTS.md]
+
+## Testing Conventions
+
+[Same testing rules as AGENTS.md]
+
+## Boundaries
+
+[Same boundaries as AGENTS.md]
+```
+
+If either file already exists, show the user the diff and ask before updating.
+
+**B. Brief (always generated — attach with `@` for deep context)**
+
+Write `.gspec/brief.md`. This is the deep project reference — architecture, data model, debt. It does NOT duplicate the rules in instruction files. Cover these:
 
 1. **What this project does** — 2-3 sentences
-2. **Tech stack** — Languages, frameworks, major libraries, versions
-3. **Architecture** — How code is organized. Describe the actual flow, not just folder names.
-4. **Key directories and entry points**
-5. **Data layer** — Database, ORM, key models and relationships
-6. **How to build, test, and run** — Commands for dev, test, build, deploy
-7. **Patterns and principles** — The prescriptive rules from Step 3. This is the most important section — it tells the agent exactly how to write code that fits this codebase.
-8. **Strengths** — What's well-designed, what patterns are worth preserving
-9. **Technical debt and known issues** — Structured assessment (see format below)
+2. **Tech stack** — table format (language, framework, database, etc.)
+3. **Architecture** — how code is organized, request flow, key directories
+4. **Data layer** — database, ORM, key models and relationships
+5. **Strengths** — what's well-designed, patterns worth preserving
+6. **Technical debt and known issues** — structured assessment (see Debt format below)
+7. **Coding rules reference** — a single line: "See `AGENTS.md` and `.github/copilot-instructions.md` for coding conventions and boundaries."
 
 ##### Debt and Issues Format
 
@@ -282,27 +358,25 @@ Don't just list debt as flat bullets. Categorize and prioritize:
 
 The goal is not to audit the codebase exhaustively — it's to surface issues that would **surprise or trip up** someone building a new feature.
 
-#### Step 5: Generate `.github/copilot-instructions.md`
+#### Step 5: Confirm and commit
 
-After writing `context.md`, **offer to generate or update `.github/copilot-instructions.md`** from the patterns and principles section. This is a Copilot-native feature — instructions in this file are automatically loaded in every Copilot session (CLI and VS Code), so the codebase conventions are always active without needing `@` mentions.
+After writing all three files, present a summary:
 
-If the file already exists, show the user the diff and ask before updating. If it doesn't exist, create it with:
+```
+✅ gspec explore complete:
 
-```markdown
-# Copilot Instructions
+Instruction files (auto-loaded by AI agents):
+  📄 AGENTS.md — [N] rules, [N] boundaries
+  📄 .github/copilot-instructions.md — synced with AGENTS.md
 
-<!-- Generated by gspec explore — edit freely, this is your file -->
+Project reference (attach with @.gspec/brief.md):
+  📄 .gspec/brief.md — architecture, data model, [N] debt items
 
-## Coding Conventions
-
-[Extract the prescriptive rules from .gspec/context.md Patterns and principles section]
-
-## Testing Conventions
-
-[Extract the testing rules from .gspec/context.md]
+These instruction files are loaded automatically in every Copilot, Claude Code,
+and Codex session. No @ mention needed — your agents are already smarter.
 ```
 
-Keep it short — only the rules that Copilot should follow when writing code. Don't duplicate the full context.md.
+Ask if anything is missing or incorrect. For brownfield, double-check: are the rules written as imperatives? Are boundaries using the three-tier format? Is the debt section categorized and severity-rated?
 
 ### Greenfield (empty or near-empty directory)
 
@@ -324,27 +398,54 @@ Then ask the user:
 5. Is this a prototype/MVP or production-grade from the start?
 6. Any existing systems this needs to integrate with?
 
-Capture answers in `.gspec/context.md` as project intent.
+Capture answers in `.gspec/brief.md` as project intent.
 
 After gathering user input, **enrich with web research:**
 - Search for existing projects in the same space — summarize what exists and where this project would differentiate
 - Search for common architectural patterns for this type of project
 - Surface any domain-specific gotchas (e.g., "photo management apps need EXIF parsing", "real-time chat needs connection state management")
-- Include a "Prior Art & Inspiration" section in `context.md` with links and brief notes on what to learn from existing solutions
+- Include a "Prior Art & Inspiration" section in `brief.md` with links and brief notes on what to learn from existing solutions
 
-### context.md Format
+For greenfield, the instruction files capture initial decisions (chosen stack, planned conventions), and brief.md captures project intent, constraints, and prior art. Both will be updated as the codebase grows.
 
-Write freeform markdown. Start with a header and type indicator:
+### brief.md Format
 
-**Write as if briefing a new developer (or AI agent) who has never seen this codebase.** Be explicit — no jargon shortcuts, no "see X file for details." The whole point of context.md is that a future session can read it cold and immediately understand the project and how to write code that fits.
+Write structured markdown with clear sections:
+
+**Write as if briefing a new developer (or AI agent) who needs to understand the project for architectural decisions — not for routine coding (that's what the instruction files handle).**
 
 ```markdown
-# Project Context
+# Project Brief
 
 **Type:** brownfield | greenfield
 **Date:** YYYY-MM-DD
 
-[rest of content organized by the categories above]
+## What this is
+[2-3 sentences]
+
+## Stack
+
+| Layer       | Choice                          |
+|-------------|---------------------------------|
+| Language    | [e.g., TypeScript 5.3]          |
+| Framework   | [e.g., Express.js 4.18]         |
+| Database    | [e.g., PostgreSQL via Prisma]   |
+| ...         | ...                             |
+
+## Architecture
+[Request flow diagram + directory map]
+
+## Data Model
+[Key entities and relationships. Reference schema file.]
+
+## Strengths
+[What's well-designed, patterns worth preserving]
+
+## Technical Debt and Known Issues
+[Categorized and severity-rated — see Debt format]
+
+## Coding Rules
+See `AGENTS.md` and `.github/copilot-instructions.md` for coding conventions and boundaries.
 ```
 
 After writing, present a brief summary to the user and ask if anything is missing or wrong. For brownfield, double-check: are the **patterns and principles** written as actionable rules, not just observations? Is the **debt section** categorized and prioritized, not just a flat list?
@@ -355,13 +456,13 @@ After writing, present a brief summary to the user and ask if anything is missin
 
 **Goal:** Define **what** to build and **why**. Not how.
 
-**Prerequisite:** `.gspec/context.md` should exist. For brownfield, **strongly recommend running Phase 1 first** — specs written without codebase understanding tend to ignore existing patterns and constraints. If the user skips it, warn once and proceed. For greenfield, ask the user to describe the project context verbally.
+**Prerequisite:** `.gspec/brief.md` should exist. For brownfield, **strongly recommend running Phase 1 first** — specs written without codebase understanding tend to ignore existing patterns and constraints. If the user skips it, warn once and proceed. For greenfield, ask the user to describe the project context verbally.
 
 **Output:** `.gspec/spec.md` (or `.gspec/features/<name>/spec.md` for multi-feature projects)
 
 ### Process
 
-1. **Read** `.gspec/context.md` for project context
+1. **Read** `.gspec/brief.md` for project context
 2. **Ask the user** to describe what they want to build. Encourage them to focus on:
    - What the user/system should be able to do
    - Why this matters (the problem being solved)
@@ -432,7 +533,7 @@ Use `gh issue create` with the spec content as the body. If any prerequisite is 
 
 ### Process
 
-1. **Read** `.gspec/context.md` and `.gspec/spec.md`
+1. **Read** `.gspec/brief.md` and `.gspec/spec.md`
 2. **Ask for the user's design ideas first** — before recommending anything:
    - "Do you have thoughts on how you'd approach this? Architecture ideas, tech preferences, patterns you'd like to use?"
    - Let them braindump freely — accept rough, mixed, incomplete input
@@ -444,7 +545,7 @@ Use `gh issue create` with the spec content as the body. If any prerequisite is 
    - Acknowledge good ideas explicitly — adopt them with rationale
    - If the user has no design ideas, that's fine — proceed with agent recommendations
 3. **Recommend a tech stack:**
-   - Analyze the requirements from `spec.md` and context from `context.md`
+   - Analyze the requirements from `spec.md` and context from `brief.md`
 
    **For brownfield:** The tech stack is mostly decided. Focus on:
    - What new libraries are needed for this feature? (e.g., email service, job queue)
@@ -468,7 +569,7 @@ Use `gh issue create` with the spec content as the body. If any prerequisite is 
    - **API / Interface design** — Key endpoints, interfaces, or contracts (if applicable)
    - **Key implementation decisions** — Patterns, libraries, approaches chosen and why
    - **Dependencies & prerequisites** — What needs to exist before implementation
-   - **Existing debt to address** — Cross-reference `context.md`'s debt section. Call out any 🔴 Blocking or 🟡 Costly items that directly affect this feature. If a debt item must be fixed before or during implementation, say so explicitly. Don't repeat the full debt list — only the items that matter for *this* feature.
+   - **Existing debt to address** — Cross-reference `brief.md`'s debt section. Call out any 🔴 Blocking or 🟡 Costly items that directly affect this feature. If a debt item must be fixed before or during implementation, say so explicitly. Don't repeat the full debt list — only the items that matter for *this* feature.
    - **Risks & mitigations** — What could go wrong, how to handle it
 
    **Right-size the plan:** Not every section is needed. Skip sections that don't apply. A CLI tool might only need Tech Stack + Implementation Approach. A full-stack app needs most sections. Ask: "Would removing this section lose important information?" If no, cut it.
@@ -512,7 +613,7 @@ Write freeform markdown. Include:
 [What needs to be in place before starting]
 
 ## Existing Debt to Address
-[Only debt from context.md that directly affects this feature — skip if none]
+[Only debt from brief.md that directly affects this feature — skip if none]
 
 ## Risks
 [What could go wrong and how to mitigate]
@@ -535,12 +636,12 @@ Once the last needed artifact is complete, actively help the user transition:
 1. **Summarize what was produced** — list the `.gspec/` files and what each contains
 2. **Give the user a ready-to-use prompt** they can copy. Example:
 
-   > "Implement the feature described in .gspec/plan.md, following the coding patterns in .gspec/context.md. Reference .gspec/spec.md for requirements."
+   > "Implement the feature described in .gspec/plan.md. Reference .gspec/spec.md for requirements. Attach @.gspec/brief.md if you need architectural context."
 
    For named features, use the paths under `.gspec/features/<name>/` in the handoff prompt.
 
 3. **Suggest switching to plan mode** (`Shift+Tab`) — Copilot's native mode for task generation and implementation
-4. **Remind the user** that `.gspec/` artifacts persist — in any future session on this project, they can say `@.gspec/context.md` to give the agent full codebase context instantly
+4. **Remind the user** that instruction files are auto-loaded — agents already know the coding rules. For deeper context, attach `@.gspec/brief.md`.
 
 The value of gspec is that these artifacts are a **persistent briefing document** for any AI agent. No more re-explaining the codebase or requirements every session.
 
@@ -550,19 +651,27 @@ The value of gspec is that these artifacts are a **persistent briefing document*
 
 **After generating any artifact, review it against these checks BEFORE presenting to the user.** Fix issues silently, then present the improved version.
 
-### Context (brownfield)
-1. Patterns are written as rules ("Do X"), not observations ("X is used")
-2. Architecture describes actual flow, not just folder names
-3. Build/test/run commands are complete — a new dev could get running from this alone
-4. No section is just a list of names — each has enough explanation to be actionable
-5. Debt is categorized (bugs, legacy, architectural, missing infrastructure) and severity-rated — not a flat bullet list
-6. Every debt item is verifiable — based on something you actually found, not speculation about what "should" exist
+### Brief (brownfield)
+1. Architecture describes actual flow, not just folder names
+2. Build/test/run commands match what's in AGENTS.md
+3. No section is just a list of names — each has enough explanation to be actionable
+4. Debt is categorized and severity-rated — not a flat bullet list
+5. Every debt item is verifiable — based on something found, not speculation
+6. Rules are NOT duplicated in brief.md — they reference instruction files
 
-### Context (greenfield)
+### Brief (greenfield)
 1. Project intent is specific enough to build from — not just "a web app" but what it does, for whom, and why
 2. Constraints are concrete — "must run on AWS Lambda" not "should be scalable"
 3. Prior art section exists and names at least 2-3 existing solutions with what to learn from each
 4. Target users are identified — even if it's "me, on my own machines"
+
+### Instruction files (AGENTS.md / copilot-instructions.md)
+1. Rules are written as imperatives ("Do X"), not observations ("X is used")
+2. Commands are exact and complete — a new session can build/test from these alone
+3. Boundaries use three-tier format (✅ Always, ⚠️ Ask first, 🚫 Never)
+4. Canonical examples point to real files that exist in the codebase
+5. Total length is under 500 words — tight enough to not pollute context
+6. AGENTS.md and copilot-instructions.md are in sync
 
 ### Spec
 1. Every requirement has an index (R1, R2...) — no unnumbered requirements
@@ -591,7 +700,7 @@ The value of gspec is that these artifacts are a **persistent briefing document*
 ## General Rules
 
 1. **Check `.gspec/` status on entry** — report what exists, suggest next step
-2. **On first `.gspec/` creation** — ask which artifacts to track in git (see "First-time setup" above). Recommend tracking `context.md` on the default branch at minimum.
+2. **On first `.gspec/` creation** — ask which artifacts to track in git (see "First-time setup" above). Recommend tracking `AGENTS.md`, `copilot-instructions.md`, and `brief.md` on the default branch.
 3. **Read existing artifacts** before writing new ones — phases build on each other
 4. **Be challenging** — probe for gaps, don't just accept requirements at face value
 5. **Keep artifacts concise** — no boilerplate. Every line should earn its place.
