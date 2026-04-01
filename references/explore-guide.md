@@ -153,7 +153,7 @@ When exploring, actively form opinions about:
 - **Complexity hotspots** — Which files/modules are unusually large or complex?
 - **Security posture** — How is auth handled? Are secrets in env vars or hardcoded?
 
-These assessments go into the "Technical Debt and Known Issues" section of `context.md`.
+These assessments go into the "Technical Debt and Known Issues" section of `brief.md`.
 
 ## Discovering Bugs and Debt
 
