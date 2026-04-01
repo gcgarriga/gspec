@@ -89,8 +89,8 @@ If a `spec.md` already exists at the target path, apply the same "update or star
 
 **Before running any phase**, check the `.gspec/` directory to understand current state:
 
-1. Check if `.gspec/` exists
-2. Check which artifacts exist: `brief.md`, `spec.md`, `plan.md`, `AGENTS.md`, `copilot-instructions.md`
+1. Check if `.gspec/` exists and check for `AGENTS.md` (repo root) and `.github/copilot-instructions.md`
+2. Check which artifacts exist: `brief.md`, `spec.md`, `plan.md`
 3. Check for feature subdirectories: `.gspec/features/*/`
 4. **Check brief.md freshness** (see staleness detection below)
 5. Report status to the user:
@@ -658,9 +658,9 @@ The value of gspec is that these artifacts are a **persistent briefing document*
 ### Brief (brownfield)
 1. Architecture describes actual flow, not just folder names
 2. No section is just a list of names — each has enough explanation to be actionable
-4. Debt is categorized and severity-rated — not a flat bullet list
-5. Every debt item is verifiable — based on something found, not speculation
-6. Rules are NOT duplicated in brief.md — they reference instruction files
+3. Debt is categorized and severity-rated — not a flat bullet list
+4. Every debt item is verifiable — based on something found, not speculation
+5. Rules are NOT duplicated in brief.md — they reference instruction files
 
 ### Brief (greenfield)
 1. Project intent is specific enough to build from — not just "a web app" but what it does, for whom, and why
