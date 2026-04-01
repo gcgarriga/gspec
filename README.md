@@ -33,11 +33,12 @@ Works with **any tech stack**, **any project type**, **greenfield or brownfield*
 
 | What gspec adds | Why it matters |
 |---|---|
-| **Persistent project memory** | `context.md`, `spec.md`, and `plan.md` survive across sessions, so Copilot does not have to rediscover the project every time. |
+| **Auto-loaded project rules** | Explore generates `AGENTS.md` + `.github/copilot-instructions.md` — instruction files that Copilot loads automatically in every session. No `@` mention needed. |
+| **Deep project reference** | `.gspec/brief.md` captures architecture, patterns, and technical debt as a cold-reader briefing — attach with `@` when a session needs deeper context. |
 | **Brownfield understanding first** | Explore captures architecture, patterns, strengths, and **categorized technical debt** (bugs, legacy patterns, architectural concerns rated by severity) before implementation starts. |
 | **Better requirement shaping** | Specify challenges vague asks, separates *what* from *how*, and indexes requirements (R1, R2…) for traceability across plan and test scenarios. |
 | **Lightweight planning** | Plan asks for your design ideas first, pushes back on flaws, then recommends concrete approaches — without replacing Copilot's native task workflow. |
-| **Copilot-native handoff** | gspec can suggest `/research`, generate `copilot-instructions.md`, and hand off cleanly with `@` file mentions. |
+| **Copilot-native handoff** | gspec generates auto-loaded instruction files (`AGENTS.md`, `copilot-instructions.md`) and hands off cleanly with `@` file mentions for deeper context. |
 
 ---
 
@@ -75,15 +76,15 @@ cd ~/.copilot/skills/gspec-skill && git pull
 
 | # | Phase | Command | Output | What it does |
 |---|-------|---------|--------|-------------|
-| 1 | **Explore** | `gspec explore` | `.gspec/context.md` | Scans the codebase (brownfield) or captures project intent (greenfield) |
+| 1 | **Explore** | `gspec explore` | `AGENTS.md` + `.github/copilot-instructions.md` + `.gspec/brief.md` | Scans the codebase (brownfield) or captures project intent (greenfield) |
 | 2 | **Specify** | `gspec specify` | `.gspec/spec.md` | Defines **what** to build — requirements, scope boundaries |
 | 3 | **Plan** | `gspec plan` | `.gspec/plan.md` | Decides **how** to build it — architecture, tech stack *(optional for small features)* |
 
 For named features, spec and plan artifacts can also live under `.gspec/features/<name>/`.
 
-Then hand off to Copilot's native **planning/task workflow** in plan mode. The `.gspec/` artifacts persist across sessions — reference them anytime with `@.gspec/context.md`.
+Then hand off to Copilot's native **planning/task workflow** in plan mode. The `.gspec/` artifacts persist across sessions — reference them anytime with `@.gspec/brief.md`. The instruction files (`AGENTS.md` and `.github/copilot-instructions.md`) are auto-loaded by Copilot without needing `@` mentions.
 
-The first time `.gspec/` is created, gspec asks which artifacts to **track in git** — `context.md` (recommended), `spec.md`/`plan.md`, and feature directories can each be tracked or ignored independently.
+The first time `.gspec/` is created, gspec asks which artifacts to **track in git** — `AGENTS.md` and `.github/copilot-instructions.md` (recommended), `.gspec/brief.md`, `spec.md`/`plan.md`, and feature directories can each be tracked or ignored independently.
 
 ---
 
@@ -129,11 +130,11 @@ Reads the code, traces request flows, identifies architecture patterns, and save
 Switch to plan mode (`Shift+Tab` to cycle modes) and give it context:
 
 ```
-> @.gspec/context.md @.gspec/spec.md @.gspec/plan.md
+> @.gspec/brief.md @.gspec/spec.md @.gspec/plan.md
 > Implement the feature following these patterns and requirements.
 ```
 
-Copilot can then generate tasks and implement using the `.gspec/` artifacts as context.
+Copilot can then generate tasks and implement using the `.gspec/` artifacts as context. The instruction files (`AGENTS.md`, `.github/copilot-instructions.md`) are loaded automatically — no `@` mention needed.
 For named features, reference the files under `.gspec/features/<name>/` instead of the root paths.
 
 ### Plan multiple features (brownfield)
@@ -190,9 +191,8 @@ These examples show both the conversational prompts and the resulting `.gspec/` 
 - Reads tests to understand domain boundaries
 - Extracts coding patterns and principles as **rules to follow** (not just observations)
 - Assesses strengths and **categorized technical debt** — bugs, legacy patterns, architectural concerns (severity-rated: 🔴 blocking / 🟡 costly / 🟢 tolerable), and missing infrastructure
-- **Offers to generate or update `.github/copilot-instructions.md`** from the discovered patterns — so every future Copilot session (CLI and VS Code) can automatically follow your codebase conventions
-
-The output is written as a **cold-reader briefing** — any future AI session can read `context.md` and immediately understand the project.
+- **Generates `AGENTS.md` and `.github/copilot-instructions.md`** from the discovered coding patterns — so every future Copilot session (CLI and VS Code) automatically follows your codebase conventions without needing `@` mentions
+- **Generates `.gspec/brief.md`** as a deep project reference — architecture, patterns, and technical debt captured as a cold-reader briefing that can be attached with `@` when sessions need richer context
 
 **Greenfield** — The agent suggests using `/research` for deep domain research, then asks about your project goals, users, constraints, and prior art.
 
@@ -230,9 +230,9 @@ gspec is built specifically for Copilot CLI, not just running on it:
 
 | Feature | How gspec uses it |
 |---------|------------------|
-| **`.github/copilot-instructions.md`** | Explore phase offers to generate or update this from discovered coding patterns so future Copilot sessions can auto-load your conventions |
-| **`/research`** | Greenfield explore suggests deep domain research via Copilot's multi-source research |
-| **`@` file mentions** | Handoff prompts use `@.gspec/context.md`, `@.gspec/spec.md`, and `@.gspec/plan.md` to pass persistent context |
+| **`AGENTS.md`** | Explore phase generates this auto-loaded instruction file with coding patterns and project rules — Copilot loads it automatically in every CLI session |
+| **`.github/copilot-instructions.md`** | Explore phase generates this auto-loaded instruction file — Copilot loads it in both CLI and VS Code sessions |
+| **`@` file mentions** | Handoff prompts use `@.gspec/brief.md`, `@.gspec/spec.md`, and `@.gspec/plan.md` to pass deeper context on demand |
 | **Plan mode** | Handoff suggests `Shift+Tab` to enter plan mode for task generation |
 | **`gh` CLI** | Optionally creates GitHub Issues from the spec for project tracking when `gh` is available and authenticated |
 | **Skills system** | User-level skill — auto-discovered in every session, every project |
@@ -282,7 +282,7 @@ gspec is built for Copilot CLI. For VS Code, consider [spec-kit](https://github.
 Copilot CLI already has excellent native planning/task and implementation capabilities in plan mode. gspec focuses on what Copilot doesn't do natively: persistent codebase understanding, structured requirements, and researched tech stack planning.
 
 **Q: What if I start in one session and continue in another?**
-Just say `gspec` or `gspec status`. The agent reads `.gspec/` and picks up where you left off. If the codebase has changed since `context.md` was last written, gspec detects the drift and offers to update only the affected sections — no need to re-explore from scratch.
+Just say `gspec` or `gspec status`. The agent reads `.gspec/` and picks up where you left off. If the codebase has changed since `brief.md` was last written, gspec detects the drift and offers to update only the affected sections — no need to re-explore from scratch.
 
 **Q: Does `.gspec/` get committed to git?**
 Your choice. The first time gspec creates `.gspec/`, it asks whether the artifacts should be tracked by git (so they can be shared with teammates and visible in PRs) or kept local by adding `.gspec/` to `.gitignore`. gspec never runs `git commit` for you — you always control what actually gets committed to the repo.
