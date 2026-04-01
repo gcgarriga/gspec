@@ -235,6 +235,7 @@ gspec is built specifically for Copilot CLI, not just running on it:
 | **`@` file mentions** | Handoff prompts use `@.gspec/brief.md`, `@.gspec/spec.md`, and `@.gspec/plan.md` to pass deeper context on demand |
 | **Plan mode** | Handoff suggests `Shift+Tab` to enter plan mode for task generation |
 | **`gh` CLI** | Optionally creates GitHub Issues from the spec for project tracking when `gh` is available and authenticated |
+| **`/research`** | Greenfield explore suggests deep domain research before capturing project intent |
 | **Skills system** | User-level skill — auto-discovered in every session, every project |
 
 ---
