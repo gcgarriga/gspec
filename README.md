@@ -19,11 +19,11 @@
 
 ## What is gspec?
 
-gspec is a [Copilot CLI](https://docs.github.com/copilot/concepts/agents/about-copilot-cli) skill for going from an idea (or an unfamiliar codebase) to a clear implementation plan — all through conversation.
+gspec is a [Copilot CLI](https://docs.github.com/copilot/concepts/agents/about-copilot-cli) skill for going from an idea (or an unfamiliar codebase) to a clear implementation plan — through conversation.
 
 Inspired by [spec-kit](https://github.com/github/spec-kit) but stripped to the essentials: **no external CLI, no templates, no scripts, no dependencies.** Just a skill file that teaches your AI agent to understand the codebase, define requirements, and plan before writing code.
 
-gspec writes persistent project artifacts — auto-loaded instruction files (`AGENTS.md`, `.github/copilot-instructions.md`) plus `.gspec/` documents — so future Copilot sessions can resume with context instead of starting from scratch. After that, Copilot's native **plan mode** takes over for implementation.
+gspec writes two kinds of project artifacts: auto-loaded instruction files (`AGENTS.md`, `.github/copilot-instructions.md`) and `.gspec/` documents you can reference with `@` when you need deeper context. After that, Copilot's native **plan mode** takes over for implementation.
 
 Works with **any tech stack**, **any project type**, **greenfield or brownfield**.
 
@@ -33,12 +33,11 @@ Works with **any tech stack**, **any project type**, **greenfield or brownfield*
 
 | What gspec adds | Why it matters |
 |---|---|
-| **Auto-loaded project rules** | Explore generates `AGENTS.md` + `.github/copilot-instructions.md` — instruction files that Copilot loads automatically in every session. No `@` mention needed. |
+| **Auto-loaded rules + clean handoff** | Explore generates `AGENTS.md` + `.github/copilot-instructions.md` — Copilot loads them automatically in every session. Then you can attach `@.gspec/brief.md`, `@.gspec/spec.md`, or `@.gspec/plan.md` only when deeper context is needed. |
 | **Deep project reference** | `.gspec/brief.md` captures architecture, patterns, and technical debt as a cold-reader briefing — attach with `@` when a session needs deeper context. |
 | **Brownfield understanding first** | Explore captures architecture, patterns, strengths, and **categorized technical debt** (bugs, legacy patterns, architectural concerns rated by severity) before implementation starts. |
 | **Better requirement shaping** | Specify challenges vague asks, separates *what* from *how*, and indexes requirements (R1, R2…) for traceability across plan and test scenarios. |
 | **Lightweight planning** | Plan asks for your design ideas first, pushes back on flaws, then recommends concrete approaches — without replacing Copilot's native task workflow. |
-| **Copilot-native handoff** | gspec generates auto-loaded instruction files (`AGENTS.md`, `copilot-instructions.md`) and hands off cleanly with `@` file mentions for deeper context. |
 
 ---
 
@@ -80,6 +79,8 @@ cd ~/.copilot/skills/gspec-skill && git pull
 | 2 | **Specify** | `gspec specify` | `.gspec/spec.md` | Defines **what** to build — requirements, scope boundaries |
 | 3 | **Plan** | `gspec plan` | `.gspec/plan.md` | Decides **how** to build it — architecture, tech stack *(optional for small features)* |
 
+You can run any phase independently, or use `gspec quick` for a single combined spec. The plan phase is optional for small features.
+
 For named features, spec and plan artifacts can also live under `.gspec/features/<name>/`.
 
 Then hand off to Copilot's native **planning/task workflow** in plan mode. The `.gspec/` artifacts persist across sessions — reference them anytime with `@.gspec/brief.md`. The instruction files (`AGENTS.md` and `.github/copilot-instructions.md`) are auto-loaded by Copilot without needing `@` mentions.
@@ -90,14 +91,14 @@ The first time `.gspec/` is created, gspec asks which artifacts to **track in gi
 
 ## Quick Start
 
-### Quick job (skip the ceremony)
+### Fast track: single combined file
 
 ```
 > gspec quick — add a /health endpoint that returns service status
 ```
 
 Produces a single combined document instead of 3 separate files. Use for small features, especially on projects that have already been explored.
-The output is a single `.gspec/spec.md` with three sections: `Context`, `Requirements`, and `Approach`. If `.gspec/brief.md` already exists, gspec uses it to ground the `Context` section.
+The output is a single `.gspec/spec.md` with three sections: `Context`, `Requirements`, and `Approach`. If `.gspec/brief.md` exists, gspec uses it to ground the `Context` section.
 gspec still checks the current `.gspec/` state first, and may ask whether to update or start fresh if a spec already exists.
 See `examples/quick.md` for a full example.
 
@@ -194,7 +195,11 @@ These examples show both the conversational prompts and the resulting instructio
 - **Generates `AGENTS.md` and `.github/copilot-instructions.md`** from the discovered coding patterns — so every future Copilot session (CLI and VS Code) automatically follows your codebase conventions without needing `@` mentions
 - **Generates `.gspec/brief.md`** as a deep project reference — architecture, patterns, and technical debt captured as a cold-reader briefing that can be attached with `@` when sessions need richer context
 
-**Greenfield** — The agent suggests using `/research` for deep domain research, then asks about your project goals, users, constraints, and prior art.
+**Greenfield** — The agent:
+- Suggests using `/research` for domain research
+- Asks about your project goals, users, and constraints
+- Captures prior art and project intent in `.gspec/brief.md`
+- Generates the same instruction files so future sessions inherit the project rules
 
 ### Specify (Phase 2)
 
@@ -226,17 +231,13 @@ Finally, it outlines **key test scenarios** mapped to requirement indexes (R1, R
 
 ## Copilot-Native Integrations
 
-gspec is built specifically for Copilot CLI, not just running on it:
+gspec is built specifically for Copilot CLI:
 
-| Feature | How gspec uses it |
-|---------|------------------|
-| **`AGENTS.md`** | Explore phase generates this auto-loaded instruction file with coding patterns and project rules — Copilot loads it automatically in every CLI session |
-| **`.github/copilot-instructions.md`** | Explore phase generates this auto-loaded instruction file — Copilot loads it in both CLI and VS Code sessions |
-| **`@` file mentions** | Handoff prompts use `@.gspec/brief.md`, `@.gspec/spec.md`, and `@.gspec/plan.md` to pass deeper context on demand |
-| **Plan mode** | Handoff suggests `Shift+Tab` to enter plan mode for task generation |
-| **`gh` CLI** | Optionally creates GitHub Issues from the spec for project tracking when `gh` is available and authenticated |
-| **`/research`** | Greenfield explore suggests deep domain research before capturing project intent |
-| **Skills system** | User-level skill — auto-discovered in every session, every project |
+- `AGENTS.md` and `.github/copilot-instructions.md` auto-load project rules
+- `@.gspec/brief.md`, `@.gspec/spec.md`, and `@.gspec/plan.md` pass deeper context on demand
+- `/research` helps with greenfield domain discovery
+- Plan mode handles implementation after gspec has done the thinking
+- `gh` can optionally turn a spec into a GitHub Issue
 
 ---
 
