@@ -228,14 +228,14 @@ Use `gspec quick` when the project has already been explored and the change is s
 - Reads tests to understand domain boundaries
 - Extracts coding patterns and principles as **rules to follow** (not just observations)
 - Assesses strengths and **categorized technical debt** — bugs, legacy patterns, architectural concerns (severity-rated: 🔴 blocking / 🟡 costly / 🟢 tolerable), and missing infrastructure
-- **Generates `AGENTS.md` and `.github/copilot-instructions.md`** from the discovered coding patterns — so every future Copilot session (CLI and VS Code) automatically follows your codebase conventions without needing `@` mentions
-- **Generates `.gspec/brief.md`** as a deep project reference — architecture, patterns, and technical debt captured as a cold-reader briefing that can be attached with `@` when sessions need richer context
+- Generates `AGENTS.md` and `.github/copilot-instructions.md` from the discovered coding patterns
+- Generates `.gspec/brief.md` as the deep project reference for later spec and plan work
 
 **Greenfield** — The agent:
 - Suggests using `/research` for domain research
 - Asks about your project goals, users, and constraints
 - Captures prior art and project intent in `.gspec/brief.md`
-- Generates the same instruction files so future sessions inherit the project rules
+- Generates the same instruction files so the project starts with shared rules
 
 ### Specify (Phase 2)
 
@@ -267,13 +267,12 @@ Finally, it outlines **key test scenarios** mapped to requirement indexes (R1, R
 
 ## Copilot-Native Integrations
 
-gspec is built specifically for Copilot CLI:
+gspec leans on a few Copilot CLI features:
 
-- `AGENTS.md` and `.github/copilot-instructions.md` auto-load project rules
-- `@.gspec/brief.md`, `@.gspec/spec.md`, and `@.gspec/plan.md` pass deeper context on demand
-- `/research` helps with greenfield domain discovery
-- Plan mode handles implementation after gspec has done the thinking
-- `gh` can optionally turn a spec into a GitHub Issue
+- **Instruction-file auto-loading** — Copilot reads `AGENTS.md` and `.github/copilot-instructions.md` automatically
+- **`/research`** — useful during greenfield exploration
+- **Plan mode** — used after gspec to turn the artifacts into implementation tasks
+- **`gh` CLI** — can optionally turn a spec into a GitHub Issue
 
 ---
 
