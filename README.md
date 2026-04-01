@@ -27,6 +27,9 @@ gspec writes two kinds of project artifacts: auto-loaded instruction files (`AGE
 
 Works with **any tech stack**, **any project type**, **greenfield or brownfield**.
 
+- **Greenfield:** starting from scratch in a new or near-empty repo
+- **Brownfield:** adding to an existing codebase with established patterns
+
 ---
 
 ## Why gspec?
@@ -71,6 +74,20 @@ cd ~/.copilot/skills/gspec-skill && git pull
 
 ---
 
+## Artifacts at a glance
+
+| Artifact | Location | What it contains | How Copilot gets it |
+|---|---|---|---|
+| `AGENTS.md` | Project root | Project rules, commands, and boundaries | Auto-loaded in Copilot CLI |
+| `.github/copilot-instructions.md` | `.github/` | Copilot-specific instructions for the same project rules | Auto-loaded in Copilot |
+| `.gspec/brief.md` | `.gspec/` | Project context: architecture/debt for brownfield, intent/constraints for greenfield | Attach with `@` when you want deeper project context |
+| `.gspec/spec.md` | `.gspec/` or `.gspec/features/<name>/` | Requirements, scope, and open questions | Attach with `@` when implementing the feature |
+| `.gspec/plan.md` | `.gspec/` or `.gspec/features/<name>/` | Technical approach, design decisions, and test scenarios | Attach with `@` when you want Copilot to follow the plan |
+
+**Rule of thumb:** instruction files are always there in Copilot; `.gspec/` files are the ones you bring into a session with `@`.
+
+---
+
 ## The 3 Phases
 
 | # | Phase | Command | Output | What it does |
@@ -81,7 +98,7 @@ cd ~/.copilot/skills/gspec-skill && git pull
 
 You can run any phase independently, or use `gspec quick` for a single combined spec. The plan phase is optional for small features.
 
-For named features, spec and plan artifacts can also live under `.gspec/features/<name>/`.
+For named features, spec and plan artifacts can also live under `.gspec/features/<name>/`. Use feature paths when a repo has multiple independent features in flight; use the root `.gspec/` files when you're planning the main project or a single feature at a time.
 
 Then hand off to Copilot's native **planning/task workflow** in plan mode. The `.gspec/` artifacts persist across sessions — reference them anytime with `@.gspec/brief.md`. The instruction files (`AGENTS.md` and `.github/copilot-instructions.md`) are auto-loaded by Copilot without needing `@` mentions.
 
@@ -90,6 +107,12 @@ The first time `.gspec/` is created, gspec asks which artifacts to **track in gi
 ---
 
 ## Quick Start
+
+Choose the lightest path that fits:
+
+- Use **`gspec quick`** when `.gspec/brief.md` already exists, the feature is small, and you do not need a separate design document.
+- Use the full **Explore → Specify → Plan** flow when the codebase is unfamiliar, the requirements are fuzzy, or design choices need discussion.
+- Use **`gspec explore`** alone when you first need to understand the project before deciding what to build.
 
 ### Fast track: single combined file
 
@@ -128,15 +151,28 @@ Reads the code, traces request flows, identifies architecture patterns, and save
 
 ### After gspec → use Copilot natively
 
-Switch to plan mode (`Shift+Tab` to cycle modes) and give it context:
+After gspec finishes, hand off to Copilot's built-in **plan mode** — this is Copilot CLI's task-planning interface, not the `.gspec/plan.md` file.
+
+1. Press `Shift+Tab` until Copilot is in **plan mode**
+2. Attach the gspec artifacts
+3. Paste an implementation prompt
+4. Let Copilot generate tasks, then implement or refine from there
+
+For the full flow, use:
 
 ```
-> @.gspec/brief.md @.gspec/spec.md @.gspec/plan.md
-> Implement the feature following these patterns and requirements.
+> @.gspec/plan.md @.gspec/spec.md @.gspec/brief.md
+> Implement this feature following the plan. Use spec.md for requirements and brief.md for project context. If something in the plan conflicts with the current codebase, stop and ask before deviating.
 ```
 
-Copilot can then generate tasks and implement using the `.gspec/` artifacts as context. The instruction files (`AGENTS.md`, `.github/copilot-instructions.md`) are loaded automatically — no `@` mention needed.
-For named features, reference the files under `.gspec/features/<name>/` instead of the root paths.
+If you used `gspec quick`, use:
+
+```text
+> @.gspec/spec.md
+> Implement this change following the existing project patterns already loaded for this repo.
+```
+
+The instruction files (`AGENTS.md`, `.github/copilot-instructions.md`) are already loaded automatically — no `@` mention needed. For named features, reference the files under `.gspec/features/<name>/` instead of the root paths.
 
 ### Plan multiple features (brownfield)
 
@@ -178,7 +214,7 @@ These examples show both the conversational prompts and the resulting instructio
 - A tiny change that does not need a spec or a plan
 - You are already in the middle of implementation and only need debugging help
 
-`gspec quick` is the middle ground when a full 3-phase workflow would be too much.
+Use `gspec quick` when the project has already been explored and the change is small enough that Copilot's native plan mode can handle implementation without a separate `plan.md`.
 
 ---
 
@@ -276,6 +312,9 @@ No. Run any phase independently, or use `gspec quick` for a combined single-file
 
 **Q: Can I edit the artifacts manually?**
 Yes. They're plain markdown. Edit them and the agent will use your changes.
+
+**Q: My spec still has open questions. Can I implement anyway?**
+Yes. Open questions are prompts for decisions, not automatic blockers. For larger decisions, answer them before planning or coding. For smaller ones, you can keep moving and resolve them during implementation — then update the spec if the decision matters long-term.
 
 **Q: Does it work with VS Code Copilot?**
 gspec is built for Copilot CLI. For VS Code, consider [spec-kit](https://github.com/github/spec-kit) which supports `.github/agents/` and `.github/prompts/`.
