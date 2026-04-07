@@ -215,11 +215,16 @@ dotm (binary)
 - All commands return structured exit codes (0 = success, 1 = error, 2 = conflicts)
 - `dotm status` outputs machine-parseable format with `--json` flag
 
-## Implementation Approach
-- File-centric: the TOML config is the source of truth for what's tracked
-- Symlinks point from home → repo (so git tracks the actual content)
-- Backup strategy: copy original to ~/.dotm-backup/<timestamp>/ before first link
-- Host overrides: files in hosts/<hostname>/ take precedence over base files
+## Implementation Steps
+1. Project scaffold — `cargo init`, clap CLI skeleton with subcommand stubs (—)
+2. Config module — parse/write `.dotm.toml`, serde structs (R6)
+3. Init command — clone repo, backup existing files, create initial symlinks (R1, R8)
+4. Add/remove commands — move files to repo, manage symlinks (R2, R3)
+5. Sync command — git pull/push, relink new files, surface conflicts (R4)
+6. Status command — show tracked files, link health, sync state (R5)
+7. Host overrides — hostname detection, host-specific file resolution (R7)
+
+Each step should compile, pass `cargo test`, and `cargo clippy` before moving on.
 
 ## Risks
 - **Symlink edge cases** — relative vs absolute paths, broken links, circular links. Mitigate with strict validation on add.

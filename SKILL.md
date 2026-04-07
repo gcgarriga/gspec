@@ -607,9 +607,10 @@ Use `gh issue create` with the spec content as the body. If any prerequisite is 
    - **Key implementation decisions** — Patterns, libraries, approaches chosen and why
    - **Dependencies & prerequisites** — What needs to exist before implementation
    - **Existing debt to address** — Cross-reference `brief.md`'s debt section. Call out any 🔴 Blocking or 🟡 Costly items that directly affect this feature. If a debt item must be fixed before or during implementation, say so explicitly. Don't repeat the full debt list — only the items that matter for *this* feature.
+   - **Implementation steps** — Ordered, atomic steps. Each step should be independently testable and leave the codebase passing all checks. Reference which Rx each step addresses.
    - **Risks & mitigations** — What could go wrong, how to handle it
 
-   **Right-size the plan:** Not every section is needed. Skip sections that don't apply. A CLI tool might only need Tech Stack + Implementation Approach. A full-stack app needs most sections. Ask: "Would removing this section lose important information?" If no, cut it.
+   **Right-size the plan:** Not every section is needed. Skip sections that don't apply. A CLI tool might only need Tech Stack + Implementation Steps. A full-stack app needs most sections. Ask: "Would removing this section lose important information?" If no, cut it.
 
 5. **Simplicity check** — Before writing, ask yourself:
    - Is this the simplest architecture that meets ALL the requirements?
@@ -643,8 +644,11 @@ Write freeform markdown. Include:
 ## Key Interfaces
 [APIs, contracts, module boundaries — skip if not applicable]
 
-## Implementation Approach
-[How to build this, key patterns and decisions]
+## Implementation Steps
+[Ordered list of atomic steps. Each step is independently testable — it should leave the codebase in a working state. Reference which Rx each step addresses.]
+1. [Step — what to build/change] (Rx)
+2. [Step] (Rx)
+3. ...
 
 ## Dependencies & Prerequisites
 [What needs to be in place before starting]
@@ -679,6 +683,7 @@ Once the last needed artifact is complete, actively help the user transition:
 
 3. **Suggest switching to plan mode** (`Shift+Tab`) — Copilot's native mode for task generation and implementation
 4. **Remind the user** that instruction files are auto-loaded — agents already know the coding rules. For deeper context, attach `@.gspec/brief.md`.
+5. **Enforce step-by-step verification** — each implementation step from the plan should pass all existing checks (tests, lint, format) before moving to the next. This keeps changes small and debuggable.
 
 The value of gspec is that these artifacts are a **persistent briefing document** for any AI agent. No more re-explaining the codebase or requirements every session.
 
@@ -725,6 +730,7 @@ The value of gspec is that these artifacts are a **persistent briefing document*
 5. Complexity distributed evenly — no step does >3 things while others do 1
 6. If user provided design ideas, they are either adopted with rationale or rejected with explanation
 7. Test scenarios reference valid Rx identifiers from the spec
+8. Implementation steps are ordered, atomic, and each leaves the codebase in a passing state
 
 ### Cross-artifact consistency
 1. Before writing any artifact, re-read upstream artifacts and flag conflicts with the user

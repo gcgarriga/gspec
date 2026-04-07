@@ -273,12 +273,15 @@ Relations: User 1:1 Wishlist, Wishlist 1:N WishlistItem, WishlistItem N:1 Produc
 - Fetches all wishlist items, compares current product price to priceAtAdd
 - For items where current price < priceAtAdd AND current price != lastNotifiedPrice: send email, update lastNotifiedPrice
 
-## Implementation Approach
-- Follow existing patterns: route → service → Prisma
-- Zod schemas for request validation, consistent with other routes
-- Share token: crypto.randomUUID(), stored on Wishlist model
-- Email templates: simple HTML, no template engine needed for v1
-- Worker runs in same process for simplicity (can extract to separate worker process later)
+## Implementation Steps
+1. Prisma migration — add Wishlist + WishlistItem models, run migration (R1)
+2. WishlistService — CRUD: add item, remove item, get wishlist with price deltas (R1, R2, R3)
+3. Wishlist routes + Zod schemas — POST/DELETE/GET endpoints wired to service (R1, R2, R3)
+4. Share logic — generate/revoke share token, public GET endpoint (R4, R5, R6)
+5. NotificationService — send price-drop email via Resend (R8)
+6. PriceCheckWorker — BullMQ hourly job, compare prices, trigger notifications (R7, R9)
+
+Each step follows existing patterns (route → service → Prisma), uses Zod for validation, and should pass tests + lint before moving on.
 
 ## Dependencies & Prerequisites
 - Redis must be running locally (add to docker-compose.yml)
