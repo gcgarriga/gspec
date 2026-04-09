@@ -515,7 +515,8 @@ After writing, present a brief summary to the user and ask if anything is missin
    - **Clarify priorities:** "If you had to ship half of this, which half matters most?"
    - **Separate what from how:** When the user mixes design decisions into requirements ("I want a Redis cache"), separate the need from the solution. Capture the requirement ("Data must be cached to avoid repeated expensive lookups") and move the solution idea to a "Design Notes" section for the Plan phase.
    - **Push back on premature design choices:** "You're specifying Redis — is caching the requirement, or is Redis specifically? Let's nail down the need first, then pick the solution in the Plan phase."
-4. **Write** `.gspec/spec.md`
+4. **Brainstorm edge cases** — Once requirements are shaped, do a quick dedicated pass: walk through each requirement and ask "what could go wrong, what's the unusual input, what's the boundary condition?" Capture these in an Edge Cases section in `spec.md`. Keep it brief — just the cases that matter.
+5. **Write** `.gspec/spec.md`
 
 ### spec.md Format
 
@@ -539,6 +540,9 @@ R3. ...
 
 ## Constraints
 [Performance, security, accessibility, scale — only what actually matters for this project]
+
+## Edge Cases
+[Key edge cases identified during requirement probing — boundary conditions, unusual inputs, failure modes. Reference Rx where applicable. Delete if empty.]
 
 ## Out of Scope
 [What this does NOT include]
@@ -622,6 +626,7 @@ Use `gh issue create` with the spec content as the body. If any prerequisite is 
    - Focus on scenarios that verify the spec is met, not exhaustive test plans
    - Each scenario references one or more Rx: "Test: R2, R5 — user cannot access another user's data after session expires"
    - Include happy paths, key error paths, and edge cases from the spec
+   - Cross-check against `spec.md`'s Edge Cases section — every edge case listed there should have a corresponding test scenario
    - This is a lightweight verification frame, not a full test suite — keep it to the scenarios that matter most
 7. **Write** `.gspec/plan.md`
 
